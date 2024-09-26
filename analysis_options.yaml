@@ -1,0 +1,22 @@
+# This file configures the analyzer to use the lint rule set from `package:lint`
+
+include: package:lint/strict.yaml # For production apps
+# include: package:lint/casual.yaml # For code samples, hackathons and other non-production code
+# include: package:lint/package.yaml # Use this for packages with public API
+
+
+# You might want to exclude auto-generated files from dart analysis
+analyzer:
+  exclude:
+    - build/**
+    - "**/generated/**"  # Exclude generated code from formatting
+
+# You can customize the lint rules set to your own liking. A list of all rules
+# can be found at https://dart-lang.github.io/linter/lints/options/options.html
+linter:
+  rules:
+    avoid_classes_with_only_static_members: false
+    require_trailing_commas: false
+    directives_ordering: false
+    sort_pub_dependencies: false
+    file_names: false
