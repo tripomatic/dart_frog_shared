@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:dart_frog/dart_frog.dart';
-import 'package:dart_frog_shared/logging/json_exportable.dart';
+import 'package:dart_frog_shared/exceptions/json_exportable.dart';
 
 /// Base class for request details
 ///
