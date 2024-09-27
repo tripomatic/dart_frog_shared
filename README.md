@@ -1,3 +1,3 @@
 # dart_frog_shared
 
-A library with shared code for Dart Frog projects.
+An experimental library with some Dart logging / exception handling code shared between Dart Frog projects.
