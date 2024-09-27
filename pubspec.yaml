@@ -1,10 +1,10 @@
 name: dart_frog_shared
 description: Share code for dart_frog projects
-version: 1.0.3
+version: 1.0.4
 # repository: https://github.com/my_org/my_repo
 
 environment:
-  sdk: ^3.5.3
+  sdk: ^3.5.0
 
 # Add regular dependencies here.
 dependencies:
