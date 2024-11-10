@@ -13,7 +13,7 @@ void main() {
 
     setUp(() {
       mockPapertrailApiWrapper = MockPapertrailApiWrapper();
-      logHandler = LogHandler.create(wrapper: mockPapertrailApiWrapper);
+      logHandler = LogHandler.create(wrapper: mockPapertrailApiWrapper, system: 'test_system');
     });
 
     test('handle logs to Papertrail in release mode', () async {
