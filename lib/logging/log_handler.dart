@@ -15,10 +15,13 @@ class LogHandler {
   /// Wrapper to log to Papertrail
   final PapertrailApiWrapper wrapper;
 
+  /// System to appear in Papertrail log, e.g. 'sso_server' or 'go_tripomatic'
+  final String system;
+
   /// Developer mode switch
   final bool developerMode;
 
-  LogHandler.create({required this.wrapper, this.developerMode = false}) {
+  LogHandler.create({required this.wrapper, required this.system, this.developerMode = false}) {
     LogHandler.instance = this;
   }
 
@@ -47,7 +50,7 @@ class LogHandler {
     };
 
     return {
-      'system': 'sso_server',
+      'system': system,
       'type': _getEventType(record),
       'logger': record.loggerName,
       'message': record.message,
