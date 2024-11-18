@@ -63,6 +63,11 @@ class UnauthorizedException extends ApiException {
       : super(statusCode: HttpStatus.unauthorized, responseMessage: responseBodyMessage ?? 'Unauthorized');
 }
 
+/// Exception thrown specifically for anonymous users.
+class AnonymousUnauthorizedException extends UnauthorizedException {
+  AnonymousUnauthorizedException({required super.message, super.responseBodyMessage});
+}
+
 /// An exception thrown when the data is somehow incorrect
 class DataException extends ApiException {
   DataException({required super.message, String? responseBodyMessage})
