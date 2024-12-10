@@ -46,15 +46,17 @@ abstract class RequestContextDetails {
       final obfuscated = <String, dynamic>{};
       for (final key in request.keys) {
         if (key.toLowerCase() == 'password') {
-          obfuscated[key] = '***';
+          final content = '${r[key]}';
+          obfuscated[key] = (request[key] is String && content.isNotEmpty) ? '***(${content.length})' : request[key];
         } else if (key.toLowerCase() == 'authorization') {
           final content = '${r[key]}';
           final last8 = content.substring(max(0, content.length - 8));
-          obfuscated[key] = content.startsWith('Bearer ') ? 'Bearer ***$last8' : '***$last8';
+          obfuscated[key] =
+              content.startsWith('Bearer ') ? 'Bearer ***$last8(${content.length})' : '***$last8(${content.length})';
         } else if (key.toLowerCase() == 'id_token') {
           final content = '${r[key]}';
           final last8 = content.substring(max(0, content.length - 8));
-          obfuscated[key] = '***$last8';
+          obfuscated[key] = '***$last8(${content.length})';
         } else {
           obfuscated[key] = request[key];
         }
