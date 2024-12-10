@@ -22,7 +22,7 @@ abstract class ApiException implements Exception, JsonExportable {
   @override
   Map<String, dynamic> toJson() {
     return {
-      'status': statusCode,
+      'status_code': statusCode,
       'error': responseMessage,
       'debug_message': message,
     };
