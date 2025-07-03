@@ -8,12 +8,11 @@ class PapertrailApiWrapper {
   final String _basicAuth;
 
   PapertrailApiWrapper({required String username, required String password})
-      : _basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
+    : _basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
 
-  late final _dio = Dio(BaseOptions(
-    contentType: 'application/json',
-    baseUrl: 'https://logs.collector.solarwinds.com/v1',
-  ));
+  late final _dio = Dio(
+    BaseOptions(contentType: 'application/json', baseUrl: 'https://logs.collector.solarwinds.com/v1'),
+  );
 
   /// Tracks a json with Papertrail
   Future<void> trackEvent(String body) async {

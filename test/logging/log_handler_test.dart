@@ -30,13 +30,7 @@ void main() {
 
     group('convertObjectToJson', () {
       test('handles simple types correctly', () {
-        final input = {
-          'string': 'hello',
-          'int': 42,
-          'double': 3.14,
-          'bool': true,
-          'null': null,
-        };
+        final input = {'string': 'hello', 'int': 42, 'double': 3.14, 'bool': true, 'null': null};
         final result = logHandler.convertObjectToJson(input);
         expect(result, '{"string":"hello","int":42,"double":3.14,"bool":true,"null":null}');
       });

@@ -33,12 +33,12 @@ abstract class RequestContextDetails {
 
   /// Converts the request context details to a JSON object
   Map<String, dynamic> toJson() => {
-        'method': requestMethod.toString(),
-        'endpoint': endpoint.toString(),
-        'request_body': obfuscateUserData(requestBody),
-        'remote_address': remoteAddress.address,
-        'request_headers': obfuscateUserData(requestHeaders),
-      };
+    'method': requestMethod.toString(),
+    'endpoint': endpoint.toString(),
+    'request_body': obfuscateUserData(requestBody),
+    'remote_address': remoteAddress.address,
+    'request_headers': obfuscateUserData(requestHeaders),
+  };
 
   /// Obfuscates the user data in the request body (password field)
   static dynamic obfuscateUserData(dynamic request) {
@@ -51,8 +51,9 @@ abstract class RequestContextDetails {
         } else if (key.toLowerCase() == 'authorization') {
           final content = '${r[key]}';
           final last8 = content.substring(max(0, content.length - 8));
-          obfuscated[key] =
-              content.startsWith('Bearer ') ? 'Bearer ***$last8(${content.length})' : '***$last8(${content.length})';
+          obfuscated[key] = content.startsWith('Bearer ')
+              ? 'Bearer ***$last8(${content.length})'
+              : '***$last8(${content.length})';
         } else if (key.toLowerCase() == 'id_token') {
           final content = '${r[key]}';
           final last8 = content.substring(max(0, content.length - 8));
@@ -79,20 +80,17 @@ class ExceptionRequestContextDetails extends RequestContextDetails {
   ExceptionRequestContextDetails(super.context, super.body, this.error);
 
   Map<String, dynamic> get errorToJson => switch (error) {
-        final JsonExportable e => e.toJson(),
-        // final ApiException e => {
-        //     'message': e.message,
-        //     'response_message': e.responseMessage,
-        //     'status_code': e.statusCode,
-        //   },
-        final Object e => {'message': e.toString(), 'status_code': 500},
-      };
+    final JsonExportable e => e.toJson(),
+    // final ApiException e => {
+    //     'message': e.message,
+    //     'response_message': e.responseMessage,
+    //     'status_code': e.statusCode,
+    //   },
+    final Object e => {'message': e.toString(), 'status_code': 500},
+  };
 
   @override
-  Map<String, dynamic> toJson() => {
-        ...errorToJson,
-        ...super.toJson(),
-      };
+  Map<String, dynamic> toJson() => {...errorToJson, ...super.toJson()};
 
   @override
   String toString() => '[${errorToJson['status_code']}] ${super.toString()}: ${errorToJson['message']}';
@@ -109,15 +107,10 @@ class ResponseRequestContextDetails extends RequestContextDetails {
 
   ResponseRequestContextDetails(super.context, super.body, this.response);
 
-  Map<String, dynamic> get responseToJson => {
-        'status_code': response.statusCode,
-      };
+  Map<String, dynamic> get responseToJson => {'status_code': response.statusCode};
 
   @override
-  Map<String, dynamic> toJson() => {
-        ...responseToJson,
-        ...super.toJson(),
-      };
+  Map<String, dynamic> toJson() => {...responseToJson, ...super.toJson()};
 
   @override
   String toString() => '[${response.statusCode}] ${super.toString()}';

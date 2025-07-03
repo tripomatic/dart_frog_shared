@@ -66,8 +66,8 @@ class LogHandler {
     return record.level.value >= Level.SEVERE.value
         ? 'ERROR'
         : record.level == Level.WARNING
-            ? 'WARNING'
-            : 'INFO';
+        ? 'WARNING'
+        : 'INFO';
   }
 
   /// Sanitizes the data by replacing all objects that cannot be converted to JSON with 'ERROR' and returns a JSON string

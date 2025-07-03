@@ -25,7 +25,7 @@ void main() {
       test('obfuscates id_token field', () {
         final input = {
           'id_token':
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U',
         };
         final result = RequestContextDetails.obfuscateUserData(input);
         expect(result, {'id_token': '***P0THsR8U(108)'});
@@ -86,23 +86,13 @@ void main() {
 
       test('handles nested maps', () {
         final input = {
-          'user': {
-            'username': 'john',
-            'password': 'secret123',
-          },
-          'token': {
-            'authorization': 'Bearer abcdefghijklmnopqrstuvwxyz123456',
-          },
+          'user': {'username': 'john', 'password': 'secret123'},
+          'token': {'authorization': 'Bearer abcdefghijklmnopqrstuvwxyz123456'},
         };
         final result = RequestContextDetails.obfuscateUserData(input);
         expect(result, {
-          'user': {
-            'username': 'john',
-            'password': 'secret123',
-          },
-          'token': {
-            'authorization': 'Bearer abcdefghijklmnopqrstuvwxyz123456',
-          },
+          'user': {'username': 'john', 'password': 'secret123'},
+          'token': {'authorization': 'Bearer abcdefghijklmnopqrstuvwxyz123456'},
         });
       });
     });
