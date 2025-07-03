@@ -20,3 +20,6 @@ linter:
     directives_ordering: false
     sort_pub_dependencies: false
     file_names: false
+
+formatter:
+  page_width: 120
