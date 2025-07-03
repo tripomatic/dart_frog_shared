@@ -68,6 +68,14 @@ class AnonymousUnauthorizedException extends UnauthorizedException {
   AnonymousUnauthorizedException({required super.message, super.responseBodyMessage});
 }
 
+/// An exception thrown if internal logic fails.
+class InternalServerErrorException extends ApiException {
+  InternalServerErrorException({required super.message, String? responseBodyMessage})
+      : super(
+            statusCode: HttpStatus.internalServerError,
+            responseMessage: responseBodyMessage ?? 'Internal Server Error');
+}
+
 /// An exception thrown when the data is somehow incorrect
 class DataException extends ApiException {
   DataException({required super.message, String? responseBodyMessage})
