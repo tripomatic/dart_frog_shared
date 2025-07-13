@@ -80,3 +80,15 @@ class DataException extends ApiException {
         responseMessage: responseBodyMessage ?? 'Internal Server Error',
       );
 }
+
+/// An exception thrown when the requested resource is not found.
+class NotFoundException extends ApiException {
+  NotFoundException({required super.message, String? responseBodyMessage})
+    : super(statusCode: HttpStatus.notFound, responseMessage: responseBodyMessage ?? 'Not Found');
+}
+
+/// An exception thrown when there is a conflict with the current state.
+class ConflictException extends ApiException {
+  ConflictException({required super.message, String? responseBodyMessage})
+    : super(statusCode: HttpStatus.conflict, responseMessage: responseBodyMessage ?? 'Conflict');
+}

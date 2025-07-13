@@ -118,7 +118,7 @@ class ResponseRequestContextDetails extends RequestContextDetails {
 
 /// Extension to process the request body
 extension ProcessRequestContextBody on RequestContext {
-  /// Returns either Map<String, dynamic> of request body json or dynamic of body as a future
+  /// Returns either `Map<String, dynamic>` of request body json or dynamic of body as a future
   Future<dynamic> jsonOrBody() async {
     if (![HttpMethod.post, HttpMethod.put].contains(request.method)) {
       return null;
