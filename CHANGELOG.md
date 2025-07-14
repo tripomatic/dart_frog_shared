@@ -1,3 +1,12 @@
+## 1.6.0
+
+- Added Firebase App Check middleware for API protection
+- Added `AppCheckConfig` for configuring App Check behavior
+- Added `AppCheckTokenCache` for performance optimization
+- Added `FirebaseAppCheckService` for Firebase integration
+- Added `appCheckMiddleware` function for easy integration with Dart Frog
+- Added `dart_firebase_admin` dependency
+
 ## 1.5.0
 
 - Added `NotFoundException` (404) exception
