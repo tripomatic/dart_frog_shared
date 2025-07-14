@@ -1,6 +1,6 @@
 name: dart_frog_shared
 description: Share code for dart_frog projects
-version: 1.5.0
+version: 1.6.0
 # repository: https://github.com/my_org/my_repo
 
 environment:
@@ -10,6 +10,7 @@ environment:
 dependencies:
   dio: ^5.4.1
   dart_frog: ^1.1.0
+  dart_firebase_admin: ^0.4.1
   logging: ^1.2.0
 
 dev_dependencies:
