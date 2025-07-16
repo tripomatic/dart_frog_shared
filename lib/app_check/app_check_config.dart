@@ -13,7 +13,7 @@ class AppCheckConfig {
   /// Firebase project ID
   final String firebaseProjectId;
 
-  /// Base64 encoded Firebase service account JSON
+  /// Firebase service account JSON as a string
   final String serviceAccountJson;
 
   /// Whether to bypass App Check in development mode

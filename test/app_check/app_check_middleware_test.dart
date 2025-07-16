@@ -31,7 +31,7 @@ void main() {
     test('should bypass App Check in dev mode', () async {
       const config = AppCheckConfig(
         firebaseProjectId: 'test-project',
-        serviceAccountJson: 'base64-json',
+        serviceAccountJson: '{"type": "service_account"}',
         enableDevMode: true,
       );
 
@@ -46,7 +46,7 @@ void main() {
     test('should bypass App Check for exempt paths', () async {
       const config = AppCheckConfig(
         firebaseProjectId: 'test-project',
-        serviceAccountJson: 'base64-json',
+        serviceAccountJson: '{"type": "service_account"}',
         exemptPaths: ['/ping'],
       );
 
@@ -61,7 +61,10 @@ void main() {
     });
 
     test('should return 401 for missing App Check header', () async {
-      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: 'base64-json');
+      const config = AppCheckConfig(
+        firebaseProjectId: 'test-project',
+        serviceAccountJson: '{"type": "service_account"}',
+      );
 
       final middleware = appCheckMiddleware(config: config);
       final middlewareHandler = middleware(handler);
@@ -72,7 +75,10 @@ void main() {
     });
 
     test('should return 401 for empty App Check header', () async {
-      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: 'base64-json');
+      const config = AppCheckConfig(
+        firebaseProjectId: 'test-project',
+        serviceAccountJson: '{"type": "service_account"}',
+      );
 
       when(() => request.headers).thenReturn({'X-Firebase-AppCheck': ''});
 

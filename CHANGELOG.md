@@ -1,3 +1,10 @@
+## 1.7.0
+
+- **BREAKING CHANGE**: `AppCheckConfig.serviceAccountJson` now accepts raw JSON string instead of base64 encoded string
+- Updated `FirebaseAppCheckService` to use raw JSON directly, removing base64 decoding
+- Updated documentation and examples to reflect the new API
+- This change simplifies the integration by removing the need for base64 encoding
+
 ## 1.6.0
 
 - Added Firebase App Check middleware for API protection
