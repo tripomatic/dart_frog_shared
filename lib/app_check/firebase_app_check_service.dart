@@ -23,9 +23,8 @@ class FirebaseAppCheckService {
     if (_appCheck != null) return _appCheck!;
 
     try {
-      // Decode the base64 service account JSON
-      final serviceAccount = base64.decode(_config.serviceAccountJson);
-      final serviceAccountJson = utf8.decode(serviceAccount);
+      // Use the service account JSON directly (no base64 decoding needed)
+      final serviceAccountJson = _config.serviceAccountJson;
 
       // Create a temporary file for the service account
       final tempFile = File.fromUri(

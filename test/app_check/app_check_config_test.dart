@@ -4,10 +4,10 @@ import 'package:test/test.dart';
 void main() {
   group('AppCheckConfig', () {
     test('should create config with required parameters', () {
-      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: 'base64-encoded-json');
+      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: '{"type": "service_account"}');
 
       expect(config.firebaseProjectId, equals('test-project'));
-      expect(config.serviceAccountJson, equals('base64-encoded-json'));
+      expect(config.serviceAccountJson, equals('{"type": "service_account"}'));
       expect(config.enableDevMode, isFalse);
       expect(config.exemptPaths, isEmpty);
       expect(config.cacheMaxSize, equals(1000));
@@ -17,7 +17,7 @@ void main() {
     test('should create config with all parameters', () {
       const config = AppCheckConfig(
         firebaseProjectId: 'test-project',
-        serviceAccountJson: 'base64-encoded-json',
+        serviceAccountJson: '{"type": "service_account"}',
         enableDevMode: true,
         exemptPaths: ['/ping', '/health'],
         cacheMaxSize: 500,
@@ -25,7 +25,7 @@ void main() {
       );
 
       expect(config.firebaseProjectId, equals('test-project'));
-      expect(config.serviceAccountJson, equals('base64-encoded-json'));
+      expect(config.serviceAccountJson, equals('{"type": "service_account"}'));
       expect(config.enableDevMode, isTrue);
       expect(config.exemptPaths, equals(['/ping', '/health']));
       expect(config.cacheMaxSize, equals(500));
