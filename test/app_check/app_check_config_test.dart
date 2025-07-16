@@ -4,7 +4,10 @@ import 'package:test/test.dart';
 void main() {
   group('AppCheckConfig', () {
     test('should create config with required parameters', () {
-      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: '{"type": "service_account"}');
+      const config = AppCheckConfig(
+        firebaseProjectId: 'test-project',
+        serviceAccountJson: '{"type": "service_account"}',
+      );
 
       expect(config.firebaseProjectId, equals('test-project'));
       expect(config.serviceAccountJson, equals('{"type": "service_account"}'));

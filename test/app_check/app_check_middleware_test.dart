@@ -61,7 +61,10 @@ void main() {
     });
 
     test('should return 401 for missing App Check header', () async {
-      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: '{"type": "service_account"}');
+      const config = AppCheckConfig(
+        firebaseProjectId: 'test-project',
+        serviceAccountJson: '{"type": "service_account"}',
+      );
 
       final middleware = appCheckMiddleware(config: config);
       final middlewareHandler = middleware(handler);
@@ -72,7 +75,10 @@ void main() {
     });
 
     test('should return 401 for empty App Check header', () async {
-      const config = AppCheckConfig(firebaseProjectId: 'test-project', serviceAccountJson: '{"type": "service_account"}');
+      const config = AppCheckConfig(
+        firebaseProjectId: 'test-project',
+        serviceAccountJson: '{"type": "service_account"}',
+      );
 
       when(() => request.headers).thenReturn({'X-Firebase-AppCheck': ''});
 

@@ -89,7 +89,7 @@ Handler middleware(Handler handler) {
     .use(appCheckMiddleware(
       config: AppCheckConfig(
         firebaseProjectId: 'your-project-id',
-        serviceAccountJson: base64EncodedServiceAccount,
+        serviceAccountJson: serviceAccountJsonString,
         enableDevMode: false,
         exemptPaths: ['/ping', '/health'],
         cacheMaxSize: 1000,
@@ -104,7 +104,7 @@ Handler middleware(Handler handler) {
 The App Check middleware requires the following configuration:
 
 - `firebaseProjectId`: Your Firebase project ID
-- `serviceAccountJson`: Base64-encoded Firebase service account JSON
+- `serviceAccountJson`: Firebase service account JSON as a string
 - `enableDevMode`: Set to `true` to bypass App Check in development
 - `exemptPaths`: List of paths that don't require App Check validation
 - `cacheMaxSize`: Maximum number of tokens to cache (default: 1000)
@@ -116,7 +116,7 @@ For production use, it's recommended to store sensitive configuration in environ
 
 ```bash
 export FIREBASE_PROJECT_ID="your-project-id"
-export FIREBASE_SERVICE_ACCOUNT_JSON="base64-encoded-json"
+export FIREBASE_SERVICE_ACCOUNT_JSON='{"type": "service_account", "project_id": "your-project"}'
 export ENABLE_DEV_MODE="false"
 ```
 

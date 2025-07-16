@@ -95,7 +95,7 @@ Handler middleware(Handler handler) {
     .use(appCheckMiddleware(
       config: AppCheckConfig(
         firebaseProjectId: env['FIREBASE_PROJECT_ID']!,
-        serviceAccountJson: env['FIREBASE_SERVICE_ACCOUNT_JSON']!,
+        serviceAccountJson: env['FIREBASE_SERVICE_ACCOUNT_JSON']!, // Raw JSON string
         enableDevMode: env['ENABLE_DEV_MODE'] == 'true',
         exemptPaths: ['/ping', '/health'],
       ),
