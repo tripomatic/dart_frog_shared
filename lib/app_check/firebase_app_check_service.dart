@@ -28,7 +28,9 @@ class FirebaseAppCheckService {
 
       // Create a temporary file for the service account
       final tempFile = File.fromUri(
-        Uri.file('${Directory.systemTemp.path}/dart-frog-shared-firebase-service-account-${DateTime.now().millisecondsSinceEpoch}.json'),
+        Uri.file(
+          '${Directory.systemTemp.path}/dart-frog-shared-firebase-service-account-${DateTime.now().millisecondsSinceEpoch}.json',
+        ),
       );
 
       try {
