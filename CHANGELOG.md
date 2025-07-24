@@ -1,3 +1,18 @@
+## 1.8.0
+
+- Added CORS middleware with configurable options
+  - `CorsConfig` for customizing allowed origins, methods, headers, and max age
+  - `corsMiddleware` function for easy integration with Dart Frog
+  - Automatic handling of OPTIONS preflight requests
+- Added rate limiting middleware with flexible configuration
+  - `RateLimitConfig` for default and endpoint-specific rate limits
+  - `EndpointRateLimit` for custom limits per endpoint
+  - Support for exempt paths and custom client identifier extraction
+  - Configurable rate limit exceeded responses
+  - `rateLimitMiddleware` function for easy integration with Dart Frog
+- Added `shelf` and `shelf_limiter` dependencies
+- Added comprehensive tests for both middleware components
+
 ## 1.7.0
 
 - **BREAKING CHANGE**: `AppCheckConfig.serviceAccountJson` now accepts raw JSON string instead of base64 encoded string
