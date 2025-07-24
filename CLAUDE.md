@@ -109,9 +109,55 @@ Handler middleware(Handler handler) {
 - Focus on testing public API and edge cases
 - Mock external dependencies (Papertrail API, HTTP clients)
 
+## Middleware Components
+
+### CORS Middleware
+The library provides configurable CORS (Cross-Origin Resource Sharing) middleware:
+
+```dart
+// In _middleware.dart
+Handler middleware(Handler handler) {
+  return handler
+    .use(corsMiddleware(
+      config: CorsConfig(
+        allowedOrigins: ['*'], // Or specific origins
+        allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Firebase-AppCheck'],
+        maxAge: Duration(hours: 24),
+      ),
+    ));
+}
+```
+
+### Rate Limiting Middleware
+Configurable rate limiting with endpoint-specific limits:
+
+```dart
+// In _middleware.dart
+Handler middleware(Handler handler) {
+  return handler
+    .use(rateLimitMiddleware(
+      config: RateLimitConfig(
+        defaultMaxRequests: 60,
+        defaultWindowSize: Duration(hours: 1),
+        endpointLimits: [
+          EndpointRateLimit(
+            path: '/autocomplete',
+            maxRequests: 300,
+            windowSize: Duration(hours: 1),
+          ),
+        ],
+        exemptPaths: ['/ping', '/health'],
+        clientIdentifierExtractor: (request) => extractClientIp(request),
+        onRateLimitExceeded: (request) => customRateLimitResponse(request),
+      ),
+    ));
+}
+```
+
 ## Important Notes
 - This is a shared library - changes affect multiple Dart Frog projects
 - Maintain backward compatibility when adding features
 - Password obfuscation is critical for security - never log raw passwords
 - The `lint: ^2.8.0` package enforces strict Dart analysis rules
-- Version follows semantic versioning (currently 1.5.0)
+- Version follows semantic versioning (currently 1.8.0)
