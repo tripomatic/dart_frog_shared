@@ -357,11 +357,114 @@ LogHandler.create(
 - Request correlation IDs
 - Performance metrics tracking
 
+## Dart Frog Build Process Analysis
+
+### Build Command Behavior
+The `dart_frog build` command creates a production build by essentially copying the entire project directory to a `/build` folder and generating additional deployment files.
+
+#### What Gets Copied:
+- **ALL files and directories from the project root**, including:
+  - Source code (`lib/`, `routes/`, `bin/`)
+  - Configuration files (`pubspec.yaml`, `analysis_options.yaml`)
+  - Documentation (`README.md`, etc.)
+  - Hidden files (`.env`, `.secret`, `.vscode/`, etc.)
+  - **Version control directories (`.git/`)** - This causes VS Code repo confusion
+  - Test files (`test/` directory)
+  - Build artifacts (`.dart_tool/`)
+
+#### Generated Files:
+- `Dockerfile` - For containerized deployment
+- `.dockerignore` - Docker ignore rules
+- `bin/server.dart` - Production server entry point
+
+#### Build Command Options:
+```bash
+dart_frog build [arguments]
+-h, --help            Print this usage information.
+    --dart-version    The Dart SDK version used to build the Dockerfile
+                      (defaults to "stable")
+```
+
+#### File Exclusion Limitations:
+- **No built-in exclusion flags** - The build command doesn't provide options to exclude specific files/directories
+- **No .buildignore support** - Unlike .gitignore, there's no standard build ignore mechanism
+- **Copies everything** - The build process is designed to be simple and comprehensive
+
+### Solutions for .git Directory Issue:
+
+#### Primary Issue:
+**IDE Repository Detection Problems**: When `.git` is copied to the build folder, IDEs like VS Code detect the build folder as the repository root instead of the actual project root, causing confusion with git operations and workspace management.
+
+#### Recommended Solution - Cross-platform Build Scripts:
+
+**For Bash/Linux/macOS (`build.sh`)**:
+```bash
+#!/bin/bash
+set -e  # Exit on any error
+
+echo "Building Dart Frog application..."
+dart_frog build
+
+echo "Cleaning up build directory..."
+rm -rf build/.git
+rm -rf build/.vscode
+rm -rf build/test
+rm -f build/.env  # Optional: remove local environment files
+
+echo "Build completed successfully!"
+```
+
+**For Windows PowerShell (`build.ps1`)**:
+```powershell
+# Enable strict error handling
+$ErrorActionPreference = "Stop"
+
+Write-Host "Building Dart Frog application..." -ForegroundColor Green
+dart_frog build
+
+Write-Host "Cleaning up build directory..." -ForegroundColor Yellow
+if (Test-Path "build\.git") { Remove-Item -Recurse -Force "build\.git" }
+if (Test-Path "build\.vscode") { Remove-Item -Recurse -Force "build\.vscode" }
+if (Test-Path "build\test") { Remove-Item -Recurse -Force "build\test" }
+if (Test-Path "build\.env") { Remove-Item -Force "build\.env" }  # Optional
+
+Write-Host "Build completed successfully!" -ForegroundColor Green
+```
+
+#### Alternative Solutions:
+
+1. **One-liner with error handling**:
+   ```bash
+   dart_frog build && rm -rf build/.git build/.vscode build/test
+   ```
+
+2. **Project structure approach**: Keep build-sensitive directories outside the main project
+
+3. **Docker context approach**: Use .dockerignore to exclude from Docker builds (though this doesn't solve the VS Code issue)
+
+#### Additional Best Practices from PR #6 Review:
+
+1. **Error Handling**: Always use `set -e` in bash scripts or `$ErrorActionPreference = "Stop"` in PowerShell for proper error handling
+2. **Cross-platform Support**: Provide both bash and PowerShell scripts for broad developer support
+3. **Optional .env Removal**: Removing `.env` files is optional and primarily for local builds where sensitive data shouldn't be in build artifacts
+4. **.gitignore Configuration**: Consider adding `/build/` to `.gitignore` as a best practice to prevent accidental commits of build artifacts
+5. **Script Permissions**: Make bash scripts executable with `chmod +x build.sh`
+
+### Best Practices:
+- Always clean up .git from build output to avoid IDE confusion
+- Use cross-platform build scripts with proper error handling
+- Consider removing test/ directory from production builds
+- Remove development configuration (.vscode/, .env files) from builds optionally
+- Add `/build/` to `.gitignore` to prevent accidental commits
+- Use environment-specific configuration for production deployments
+
 ## Recent Changes and Dead-ends
 
 ### Last Updated: 2025-08-20
 
 ### Recent Changes:
+- **PR #6**: Documented dart_frog build issue where .git directory is copied to build folder causing IDE repository detection problems
+- Added cross-platform build scripts (bash and PowerShell) with proper error handling 
 - Added CORS and rate limiting middleware (v1.8.0)
 - Enhanced Firebase service account handling with temp file pattern
 - Improved error context tracking and logging

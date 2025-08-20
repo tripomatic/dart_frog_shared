@@ -2,6 +2,58 @@
 
 An experimental library with some Dart logging / exception handling code shared between Dart Frog projects.
 
+## ⚠️ Important: Dart Frog Build Issue
+
+When running `dart_frog build`, the entire project directory (including the `.git` folder) is copied into the `build/` directory. This causes VS Code and other IDEs to detect the `build/` directory as a separate Git repository, showing duplicate repositories in the Source Control panel.
+
+### Solution
+
+Create a `build.sh` script in your project root:
+
+```bash
+#!/bin/bash
+# Build script for dart_frog that removes .git from build directory
+
+echo "Building dart_frog project..."
+dart_frog build
+
+# Remove .git directory from build to prevent IDE repository detection issues
+if [ -d "build/.git" ]; then
+    rm -rf build/.git
+    echo "Cleaned up .git directory from build"
+fi
+
+# Optional: Remove other unnecessary files from production build
+rm -rf build/.vscode build/test build/.env
+
+echo "Build complete!"
+```
+
+Make it executable and use it instead of `dart_frog build`:
+
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+### Alternative: Package.json Script
+
+If your project uses npm scripts, add this to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "build": "dart_frog build && rm -rf build/.git build/.vscode build/test"
+  }
+}
+```
+
+Then run: `npm run build`
+
+### Note
+
+This is a known limitation of the dart_frog CLI (v1.2.6) which doesn't support file exclusion during the build process. The `.dartfrogignore` file seen in some projects is not an official feature and doesn't actually work.
+
 ## Features
 
 ### Exception Handling
