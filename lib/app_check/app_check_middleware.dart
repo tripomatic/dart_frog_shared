@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:logging/logging.dart';
 
-import '../logging/log_handler.dart';
-import '../logging/request_context_details.dart';
-import 'app_check_config.dart';
-import 'app_check_token_cache.dart';
-import 'firebase_app_check_service.dart';
+import 'package:dart_frog_shared/logging/request_context_details.dart';
+import 'package:dart_frog_shared/app_check/app_check_config.dart';
+import 'package:dart_frog_shared/app_check/app_check_token_cache.dart';
+import 'package:dart_frog_shared/app_check/firebase_app_check_service.dart';
 
 /// Creates App Check middleware for Dart Frog applications
 Middleware appCheckMiddleware({required AppCheckConfig config}) {

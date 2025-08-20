@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_firebase_admin/app_check.dart';
 import 'package:dart_firebase_admin/dart_firebase_admin.dart';
 import 'package:logging/logging.dart';
 
-import 'app_check_config.dart';
+import 'package:dart_frog_shared/app_check/app_check_config.dart';
 
 /// Service for interacting with Firebase App Check
 class FirebaseAppCheckService {
@@ -66,10 +65,10 @@ class FirebaseAppCheckService {
 
     try {
       final appCheck = await _firebaseAppCheck;
-      final verifiedToken = await appCheck.verifyToken(token);
+      await appCheck.verifyToken(token);
 
       _logger.fine('App Check token verified successfully');
-      return verifiedToken != null;
+      return true;
     } catch (e, stack) {
       _logger.warning('App Check token verification failed', e, stack);
       return false;

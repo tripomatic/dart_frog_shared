@@ -21,7 +21,7 @@ void main() {
       context = _MockRequestContext();
       request = _MockRequest();
       response = _MockResponse();
-      handler = (_) async => response;
+      handler = (_) => Future.value(response);
 
       when(() => context.request).thenReturn(request);
       when(() => response.headers).thenReturn({});
@@ -46,11 +46,11 @@ void main() {
     test('handles OPTIONS preflight request with custom config', () async {
       when(() => request.method).thenReturn(HttpMethod.options);
 
-      final config = CorsConfig(
+      const config = CorsConfig(
         allowedOrigins: ['https://example.com', 'https://app.example.com'],
         allowedMethods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type', 'Authorization'],
-        maxAge: const Duration(hours: 12),
+        maxAge: Duration(hours: 12),
       );
 
       final middleware = corsMiddleware(config: config);
