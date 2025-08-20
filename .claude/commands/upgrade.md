@@ -21,3 +21,5 @@ If we have packages to upgrade:
 6. Upgrade dependencies
 - Run `flutter pub get` to install the new dependencies
 - Run tests, analyzer etc. and fix any related issues.
+
+7. Prepare a pull request and ask the user to review it
