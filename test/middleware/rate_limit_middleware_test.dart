@@ -33,7 +33,7 @@ void main() {
       context = _MockRequestContext();
       request = _MockRequest();
       response = _MockResponse();
-      handler = (_) async => response;
+      handler = (_) => Future.value(response);
       uri = _MockUri();
 
       when(() => context.request).thenReturn(request);
@@ -44,7 +44,7 @@ void main() {
     test('skips rate limiting for exempt paths', () async {
       when(() => uri.path).thenReturn('/ping');
 
-      final config = RateLimitConfig(exemptPaths: ['/ping']);
+      const config = RateLimitConfig(exemptPaths: ['/ping']);
       final middleware = rateLimitMiddleware(config: config);
       final result = await middleware(handler)(context);
 
@@ -62,7 +62,7 @@ void main() {
       expect(result, equals(response));
     });
 
-    test('applies default rate limit configuration', () async {
+    test('applies default rate limit configuration', () {
       when(() => uri.path).thenReturn('/api/test');
 
       final middleware = rateLimitMiddleware();
@@ -74,15 +74,10 @@ void main() {
       expect(middlewareHandler, isA<Handler>());
     });
 
-    test('applies endpoint-specific rate limits', () async {
+    test('applies endpoint-specific rate limits', () {
       when(() => uri.path).thenReturn('/api/special');
 
-      final config = RateLimitConfig(
-        defaultMaxRequests: 60,
-        endpointLimits: [
-          EndpointRateLimit(path: '/api/special', maxRequests: 300, windowSize: const Duration(hours: 1)),
-        ],
-      );
+      const config = RateLimitConfig(endpointLimits: [EndpointRateLimit(path: '/api/special', maxRequests: 300)]);
 
       final middleware = rateLimitMiddleware(config: config);
       final middlewareHandler = middleware(handler);

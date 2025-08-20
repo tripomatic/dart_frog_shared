@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 /// In-memory cache for validated App Check tokens
 class AppCheckTokenCache {
   /// Creates a new token cache instance

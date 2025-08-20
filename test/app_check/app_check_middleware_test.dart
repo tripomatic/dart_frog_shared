@@ -21,7 +21,7 @@ void main() {
       context = _MockRequestContext();
       request = _MockRequest();
       response = Response(body: 'Success');
-      handler = (_) async => response;
+      handler = (_) => Future.value(response);
 
       when(() => context.request).thenReturn(request);
       when(() => request.uri).thenReturn(Uri.parse('/test'));
