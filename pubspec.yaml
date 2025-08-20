@@ -1,7 +1,8 @@
 name: dart_frog_shared
-description: Shared code for all dart_frog projects with helpful libraries
-version: 1.8.0
-# repository: https://github.com/my_org/my_repo
+description: Shared exception handling, logging, and middleware utilities for Dart Frog server projects
+version: 1.8.1
+repository: https://github.com/tripomatic/dart_frog_shared
+homepage: https://github.com/tripomatic/dart_frog_shared
 
 environment:
   sdk: ^3.8.0

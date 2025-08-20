@@ -1,3 +1,10 @@
+## 1.8.1
+
+- Added prominent documentation in README about dart_frog build .git directory issue
+- Provided build script solution to prevent IDE repository detection problems
+- Updated dependencies and fixed analyzer issues
+- Updated dart_frog_expert agent memory with build process analysis
+
 ## 1.8.0
 
 - Added CORS middleware with configurable options
