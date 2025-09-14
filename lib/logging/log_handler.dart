@@ -21,7 +21,15 @@ class LogHandler {
   /// Developer mode switch
   final bool developerMode;
 
-  LogHandler.create({required this.wrapper, required this.system, this.developerMode = false}) {
+  /// Force Papertrail logging even in dev mode (for testing)
+  final bool forcePapertrail;
+
+  LogHandler.create({
+    required this.wrapper,
+    required this.system,
+    this.developerMode = false,
+    this.forcePapertrail = false,
+  }) {
     LogHandler.instance = this;
   }
 
@@ -32,8 +40,8 @@ class LogHandler {
     final event = _createEventMap(record, isDevMode);
     final eventString = convertObjectToJson(event);
 
-    // Log to Papertrail
-    if (!isDevMode) {
+    // Log to Papertrail (in production mode or when forced)
+    if (!isDevMode || forcePapertrail) {
       await wrapper.trackEvent(eventString);
     }
 
