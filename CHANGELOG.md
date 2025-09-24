@@ -1,3 +1,12 @@
+## 1.8.2
+
+- Fixed critical RangeError crash in `LogHandler._reducedStackTrace` when handling short stack traces
+- Improved stack trace handling with increased line limit from 8 to 20 for better debugging
+- Added error location extraction from stack traces for cleaner logs
+- Added `forcePapertrail` option to force Papertrail logging even in developer mode
+- Improved Papertrail logging configuration
+- Removed legacy commands and agents code
+
 ## 1.8.1
 
 - Added prominent documentation in README about dart_frog build .git directory issue
