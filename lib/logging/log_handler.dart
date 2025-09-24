@@ -57,6 +57,9 @@ class LogHandler {
       _ => null,
     };
 
+    // Extract error location from stack trace if available
+    final errorLocation = record.stackTrace != null ? _extractErrorLocation(record.stackTrace!) : null;
+
     return {
       'system': system,
       'type': _getEventType(record),
@@ -65,6 +68,7 @@ class LogHandler {
       'environment': isDevMode ? 'debug' : 'release',
       if (record.error != null) 'error': record.error?.toString(),
       if (record.stackTrace != null) 'stackTrace': _reducedStackTrace(record.stackTrace!),
+      if (errorLocation != null) 'errorLocation': errorLocation,
       ...?details,
     };
   }
@@ -105,10 +109,55 @@ class LogHandler {
     }
   }
 
-  /// Reduces the stack trace to the first 8 lines
+  /// Reduces the stack trace to the first N lines (configurable)
   List<String> _reducedStackTrace(StackTrace stackTrace) {
-    final lines = stackTrace.toString().split('\n');
-    return lines.sublist(0, 8);
+    final stackTraceString = stackTrace.toString();
+    // Handle empty stack traces
+    if (stackTraceString.isEmpty) {
+      return [];
+    }
+
+    final lines = stackTraceString.split('\n');
+    // Filter out empty lines that might result from split
+    final nonEmptyLines = lines.where((line) => line.isNotEmpty).toList();
+
+    if (nonEmptyLines.isEmpty) {
+      return [];
+    }
+
+    // Increase from 8 to 20 lines to capture more context
+    // First few lines usually contain the actual error location
+    const maxLines = 20;
+    return nonEmptyLines.sublist(0, nonEmptyLines.length < maxLines ? nonEmptyLines.length : maxLines);
+  }
+
+  /// Extracts the error location (file and line) from the first line of the stack trace
+  String? _extractErrorLocation(StackTrace stackTrace) {
+    try {
+      final lines = stackTrace.toString().split('\n');
+      if (lines.isEmpty) return null;
+
+      // First line typically contains the error location
+      // Format: #0      ClassName.methodName (package:project/path/file.dart:line:column)
+      final firstLine = lines[0];
+      final match = RegExp(r'\(([^)]+\.dart:[0-9]+:[0-9]+)\)').firstMatch(firstLine);
+
+      if (match != null) {
+        return match.group(1); // Returns something like "package:api_places/services/place_service.dart:123:45"
+      }
+
+      // Fallback: try to find any .dart file reference in the first few lines
+      for (final line in lines.take(3)) {
+        final fileMatch = RegExp(r'([\w/]+\.dart:[0-9]+:[0-9]+)').firstMatch(line);
+        if (fileMatch != null) {
+          return fileMatch.group(1);
+        }
+      }
+
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 }
 
