@@ -75,12 +75,14 @@ throw BadRequestException(
 LogHandler.create(
   wrapper: SolarWindsApiWrapper(
     token: env['SOLARWINDS_API_TOKEN']!,
-    region: 'eu-01', // or 'na-01', 'na-02', 'ap-01'
+    region: 'eu-01', // Must match your organization's region (eu-01, na-01, na-02, ap-01)
   ),
   system: 'api_name',
   developerMode: false // Set true for local development
 );
 ```
+
+**Note:** The `region` parameter must match your SolarWinds Observability organization's data center. Find your region in the SolarWinds URL: `https://my.XX-YY.cloud.solarwinds.com` (XX-YY is your region). European deployments should use `eu-01`.
 
 **Legacy Papertrail (Deprecated):**
 ```dart

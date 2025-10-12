@@ -1,3 +1,10 @@
+## 1.9.1
+
+- Improved documentation to clarify that `region` parameter must match your SolarWinds organization's data center
+- Added guidance on how to find your organization's region from the SolarWinds URL
+- Updated code documentation in `SolarWindsApiWrapper` constructor
+- Clarified that European deployments should use `eu-01` region
+
 ## 1.9.0
 
 - Added SolarWinds Observability API support with Bearer token authentication

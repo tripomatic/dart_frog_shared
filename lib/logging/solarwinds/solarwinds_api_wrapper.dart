@@ -18,13 +18,17 @@ class SolarWindsApiWrapper extends LogApiWrapper {
   /// Creates a SolarWinds API wrapper
   ///
   /// [token] - API ingestion token from SolarWinds Observability settings
-  /// [region] - Data center region (e.g., 'eu-01', 'na-01', 'na-02', 'ap-01')
+  /// [region] - Your organization's data center region. This must match the region
+  ///            where your SolarWinds organization is hosted. Find your region in
+  ///            the URL: https://my.XX-YY.cloud.solarwinds.com (XX-YY is your region).
+  ///            Available regions: 'eu-01' (Europe), 'na-01' (North America/AWS),
+  ///            'na-02' (North America/Azure), 'ap-01' (Australia)
   ///
   /// Example:
   /// ```dart
   /// final wrapper = SolarWindsApiWrapper(
   ///   token: 'your-api-token',
-  ///   region: 'eu-01',
+  ///   region: 'eu-01', // Must match your organization's region
   /// );
   /// ```
   SolarWindsApiWrapper({required String token, required String region}) : _bearerToken = 'Bearer $token' {

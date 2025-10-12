@@ -121,7 +121,7 @@ import 'package:dart_frog_shared/dart_frog_shared.dart';
 LogHandler.create(
   wrapper: SolarWindsApiWrapper(
     token: env['SOLARWINDS_API_TOKEN']!,
-    region: 'eu-01', // or 'na-01', 'na-02', 'ap-01'
+    region: 'eu-01', // Must match your SolarWinds organization's region
   ),
   system: 'my_api',
   developerMode: false,
@@ -131,6 +131,14 @@ LogHandler.create(
 final logger = Logger('MyRoute');
 logger.info('Processing request');
 ```
+
+**Important**: The `region` parameter must match your SolarWinds Observability organization's data center. You can find your region in the URL when accessing SolarWinds: `https://my.XX-YY.cloud.solarwinds.com` (where XX-YY is your region).
+
+Available regions:
+- `eu-01` - Europe (Frankfurt, AWS) - recommended for European deployments
+- `na-01` - North America (AWS)
+- `na-02` - North America (Azure)
+- `ap-01` - Australia (AWS)
 
 #### Legacy Papertrail (Deprecated)
 
