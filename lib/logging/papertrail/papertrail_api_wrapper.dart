@@ -1,17 +1,32 @@
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
+import 'package:dart_frog_shared/logging/log_api_wrapper.dart';
 
 /// Wrapper for the Papertrail API
-class PapertrailApiWrapper {
+///
+/// This class is deprecated. Use [SolarWindsApiWrapper] instead.
+/// Papertrail is migrating to SolarWinds Observability.
+/// See: https://documentation.solarwinds.com/en/success_center/observability/content/intro/logs/migrate-papertrail-guide.htm
+@Deprecated(
+  'Use SolarWindsApiWrapper instead. '
+  'Papertrail is migrating to SolarWinds Observability. '
+  'See: https://documentation.solarwinds.com/en/success_center/observability/content/intro/logs/migrate-papertrail-guide.htm',
+)
+class PapertrailApiWrapper extends LogApiWrapper {
   final String _basicAuth;
   final _logger = Logger('PapertrailApiWrapper');
 
   /// Track if we've already warned about authentication issues
-  static bool _hasWarnedAboutAuth = false;
+  bool _hasWarnedAboutAuth = false;
 
+  @Deprecated(
+    'Use SolarWindsApiWrapper instead. '
+    'Papertrail is migrating to SolarWinds Observability. '
+    'See: https://documentation.solarwinds.com/en/success_center/observability/content/intro/logs/migrate-papertrail-guide.htm',
+  )
   PapertrailApiWrapper({required String username, required String password})
     : _basicAuth = 'Basic ${base64Encode(utf8.encode('$username:$password'))}' {
     // Warn if password is empty
@@ -25,6 +40,7 @@ class PapertrailApiWrapper {
   );
 
   /// Tracks a json with Papertrail
+  @override
   Future<void> trackEvent(String body) async {
     try {
       // Send the POST request
@@ -37,7 +53,11 @@ class PapertrailApiWrapper {
       // Handle the response
       if (response.statusCode != 200) {
         // Log to console for Cloud Run logs
-        print('Failed to send event to Papertrail. Status code: ${response.statusCode}');
+        log(
+          'Failed to send event to Papertrail. Status code: ${response.statusCode}',
+          name: 'PapertrailApiWrapper',
+          level: Level.SEVERE.value,
+        );
 
         // Also log locally if this is an auth issue
         if (response.statusCode == 401 && !_hasWarnedAboutAuth) {
@@ -47,11 +67,15 @@ class PapertrailApiWrapper {
       }
     } catch (e) {
       // Always log to console for Cloud Run visibility
-      print('Error sending event to Papertrail: $e');
+      log('Error sending event to Papertrail: $e', name: 'PapertrailApiWrapper', level: Level.SEVERE.value);
 
       // Log more details for DioErrors
       if (e is DioException) {
-        print('Papertrail error details - Type: ${e.type}, Message: ${e.message}, Response: ${e.response?.statusCode}');
+        log(
+          'Papertrail error details - Type: ${e.type}, Message: ${e.message}, Response: ${e.response?.statusCode}',
+          name: 'PapertrailApiWrapper',
+          level: Level.SEVERE.value,
+        );
 
         // Special handling for authentication errors
         if (e.response?.statusCode == 401 && !_hasWarnedAboutAuth) {

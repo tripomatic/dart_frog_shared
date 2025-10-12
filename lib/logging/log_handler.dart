@@ -1,27 +1,27 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:dart_frog_shared/logging/papertrail/papertrail_api_wrapper.dart';
+import 'package:dart_frog_shared/logging/log_api_wrapper.dart';
 import 'package:logging/logging.dart';
 import 'package:dart_frog_shared/logging/request_context_details.dart';
 
-/// Handles logging for the SSO server
+/// Handles logging for the application
 ///
 /// Before using, you need to call [LogHandler.create]
 class LogHandler {
   /// Singleton instance
   static late LogHandler instance;
 
-  /// Wrapper to log to Papertrail
-  final PapertrailApiWrapper wrapper;
+  /// Wrapper to log to external logging service
+  final LogApiWrapper wrapper;
 
-  /// System to appear in Papertrail log, e.g. 'sso_server' or 'go_tripomatic'
+  /// System to appear in logs, e.g. 'sso_server' or 'go_tripomatic'
   final String system;
 
   /// Developer mode switch
   final bool developerMode;
 
-  /// Force Papertrail logging even in dev mode (for testing)
+  /// Force logging to external service even in dev mode (for testing)
   final bool forcePapertrail;
 
   LogHandler.create({
@@ -40,7 +40,7 @@ class LogHandler {
     final event = _createEventMap(record, isDevMode);
     final eventString = convertObjectToJson(event);
 
-    // Log to Papertrail (in production mode or when forced)
+    // Log to external service (in production mode or when forced)
     if (!isDevMode || forcePapertrail) {
       await wrapper.trackEvent(eventString);
     }

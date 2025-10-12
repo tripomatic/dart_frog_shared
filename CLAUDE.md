@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-dart_frog_shared is an experimental Dart library that provides shared exception handling and logging infrastructure for Dart Frog server projects. It standardizes API error responses and centralizes logging with Papertrail integration.
+dart_frog_shared is an experimental Dart library that provides shared exception handling and logging infrastructure for Dart Frog server projects. It standardizes API error responses and centralizes logging with support for SolarWinds Observability and legacy Papertrail.
 
 ## Development Commands
 
@@ -38,9 +38,12 @@ dart format --set-exit-if-changed .
 
 ### Logging Architecture
 - `LogHandler` uses singleton pattern - access via `LogHandler()` not constructor
+- Polymorphic logging service support via `LogApiWrapper` abstract base class
+- `SolarWindsApiWrapper` - Modern Bearer token authentication for SolarWinds Observability (recommended)
+- `PapertrailApiWrapper` - Legacy Basic Auth for Papertrail (deprecated)
 - Request context tracking through `RequestContextDetails` hierarchy
 - Automatic sanitization of sensitive data (passwords show as `***(length)`, tokens partially obfuscated)
-- Papertrail integration for production, developer mode for local-only logging
+- Developer mode for local-only logging
 
 ### App Check Architecture
 - `appCheckMiddleware` creates middleware function with captured config and services
@@ -66,14 +69,28 @@ throw BadRequestException(
 ```
 
 ### Setting Up Logging
+
+**SolarWinds Observability (Recommended):**
 ```dart
 LogHandler.create(
-  wrapper: PapertrailApiWrapper(
-    username: 'your_username',
-    password: 'your_password'
+  wrapper: SolarWindsApiWrapper(
+    token: env['SOLARWINDS_API_TOKEN']!,
+    region: 'eu-01', // or 'na-01', 'na-02', 'ap-01'
   ),
   system: 'api_name',
   developerMode: false // Set true for local development
+);
+```
+
+**Legacy Papertrail (Deprecated):**
+```dart
+LogHandler.create(
+  wrapper: PapertrailApiWrapper(
+    username: env['PAPERTRAIL_USERNAME']!,
+    password: env['PAPERTRAIL_PASSWORD']!,
+  ),
+  system: 'api_name',
+  developerMode: false
 );
 ```
 

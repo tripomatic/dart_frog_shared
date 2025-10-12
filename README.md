@@ -71,9 +71,11 @@ The library provides a comprehensive set of API exceptions that can be easily co
 
 ### Logging
 
-Provides a centralized logging system with Papertrail integration:
+Provides a centralized logging system with support for multiple logging services:
 
 - `LogHandler` - Singleton for managing application logs
+- `SolarWindsApiWrapper` - Modern SolarWinds Observability integration (recommended)
+- `PapertrailApiWrapper` - Legacy Papertrail integration (deprecated)
 - Support for developer mode (local logging only)
 - Request context tracking
 - JSON-formatted log events
@@ -110,14 +112,16 @@ Response onRequest(RequestContext context) {
 
 ### Logging
 
+#### SolarWinds Observability (Recommended)
+
 ```dart
 import 'package:dart_frog_shared/dart_frog_shared.dart';
 
-// Initialize the logger (typically in your main function)
+// Initialize the logger with SolarWinds Observability (recommended)
 LogHandler.create(
-  wrapper: PapertrailApiWrapper(
-    username: 'your_username',
-    password: 'your_password',
+  wrapper: SolarWindsApiWrapper(
+    token: env['SOLARWINDS_API_TOKEN']!,
+    region: 'eu-01', // or 'na-01', 'na-02', 'ap-01'
   ),
   system: 'my_api',
   developerMode: false,
@@ -127,6 +131,24 @@ LogHandler.create(
 final logger = Logger('MyRoute');
 logger.info('Processing request');
 ```
+
+#### Legacy Papertrail (Deprecated)
+
+```dart
+import 'package:dart_frog_shared/dart_frog_shared.dart';
+
+// Legacy Papertrail integration (deprecated - use SolarWindsApiWrapper instead)
+LogHandler.create(
+  wrapper: PapertrailApiWrapper(
+    username: env['PAPERTRAIL_USERNAME']!,
+    password: env['PAPERTRAIL_PASSWORD']!,
+  ),
+  system: 'my_api',
+  developerMode: false,
+);
+```
+
+**Note:** Papertrail is migrating to SolarWinds Observability. Please migrate to `SolarWindsApiWrapper` for new projects.
 
 ### App Check
 
