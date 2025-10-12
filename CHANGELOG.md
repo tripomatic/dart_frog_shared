@@ -1,3 +1,15 @@
+## 1.9.0
+
+- Added SolarWinds Observability API support with Bearer token authentication
+- Added abstract `LogApiWrapper` base class for polymorphic logging service support
+- Added `SolarWindsApiWrapper` with regional endpoint support (eu-01, na-01, na-02, ap-01)
+- Deprecated `PapertrailApiWrapper` (still fully supported, no breaking changes)
+- Updated `LogHandler` to use base class for polymorphism
+- Replaced `print()` with `log()` from `dart:developer` for proper structured logging
+- Fixed static mutable state - now uses instance variables for thread safety
+- Added comprehensive documentation for migration from Papertrail to SolarWinds Observability
+- Added release process documentation
+
 ## 1.8.2
 
 - Fixed critical RangeError crash in `LogHandler._reducedStackTrace` when handling short stack traces
