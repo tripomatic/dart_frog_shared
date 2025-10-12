@@ -3,9 +3,14 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
+import 'package:dart_frog_shared/logging/log_api_wrapper.dart';
 
 /// Wrapper for the Papertrail API
-class PapertrailApiWrapper {
+///
+/// This class is deprecated. Use [SolarWindsApiWrapper] instead.
+/// Papertrail is migrating to SolarWinds Observability.
+/// See: https://documentation.solarwinds.com/en/success_center/observability/content/intro/logs/migrate-papertrail-guide.htm
+class PapertrailApiWrapper extends LogApiWrapper {
   final String _basicAuth;
   final _logger = Logger('PapertrailApiWrapper');
 
@@ -25,6 +30,7 @@ class PapertrailApiWrapper {
   );
 
   /// Tracks a json with Papertrail
+  @override
   Future<void> trackEvent(String body) async {
     try {
       // Send the POST request

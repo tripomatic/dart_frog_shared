@@ -1,31 +1,31 @@
 import 'package:dart_frog_shared/logging/log_handler.dart';
-import 'package:dart_frog_shared/logging/papertrail/papertrail_api_wrapper.dart';
+import 'package:dart_frog_shared/logging/log_api_wrapper.dart';
 import 'package:logging/logging.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-class MockPapertrailApiWrapper extends Mock implements PapertrailApiWrapper {}
+class MockLogApiWrapper extends Mock implements LogApiWrapper {}
 
 void main() {
   group('LogHandler', () {
     late LogHandler logHandler;
-    late MockPapertrailApiWrapper mockPapertrailApiWrapper;
+    late MockLogApiWrapper mockLogApiWrapper;
 
     setUp(() {
-      mockPapertrailApiWrapper = MockPapertrailApiWrapper();
-      logHandler = LogHandler.create(wrapper: mockPapertrailApiWrapper, system: 'test_system');
+      mockLogApiWrapper = MockLogApiWrapper();
+      logHandler = LogHandler.create(wrapper: mockLogApiWrapper, system: 'test_system');
     });
 
-    test('handle logs to Papertrail in release mode', () async {
+    test('handle logs to external service in release mode', () async {
       final record = LogRecord(Level.INFO, 'Test message', 'TestLogger');
 
-      when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {
+      when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {
         return;
       });
 
       await logHandler.handle(record);
 
-      verify(() => mockPapertrailApiWrapper.trackEvent(any())).called(1);
+      verify(() => mockLogApiWrapper.trackEvent(any())).called(1);
     });
 
     group('convertObjectToJson', () {
@@ -57,11 +57,11 @@ void main() {
         final emptyStackTrace = StackTrace.fromString('');
         final record = LogRecord(Level.SEVERE, 'Error message', 'TestLogger', 'Test error', emptyStackTrace);
 
-        when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {});
+        when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {});
 
         await logHandler.handle(record);
 
-        final capturedEvent = verify(() => mockPapertrailApiWrapper.trackEvent(captureAny())).captured.first as String;
+        final capturedEvent = verify(() => mockLogApiWrapper.trackEvent(captureAny())).captured.first as String;
         expect(capturedEvent, contains('"stackTrace":[]'));
       });
 
@@ -69,11 +69,11 @@ void main() {
         final singleLineStackTrace = StackTrace.fromString('#0      main (package:test/test.dart:10:5)');
         final record = LogRecord(Level.SEVERE, 'Error message', 'TestLogger', 'Test error', singleLineStackTrace);
 
-        when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {});
+        when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {});
 
         await logHandler.handle(record);
 
-        final capturedEvent = verify(() => mockPapertrailApiWrapper.trackEvent(captureAny())).captured.first as String;
+        final capturedEvent = verify(() => mockLogApiWrapper.trackEvent(captureAny())).captured.first as String;
         expect(capturedEvent, contains('"stackTrace":["#0      main (package:test/test.dart:10:5)"]'));
       });
 
@@ -87,11 +87,11 @@ void main() {
 
         final record = LogRecord(Level.SEVERE, 'Error message', 'TestLogger', 'Test error', fewLinesStackTrace);
 
-        when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {});
+        when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {});
 
         await logHandler.handle(record);
 
-        final capturedEvent = verify(() => mockPapertrailApiWrapper.trackEvent(captureAny())).captured.first as String;
+        final capturedEvent = verify(() => mockLogApiWrapper.trackEvent(captureAny())).captured.first as String;
 
         // Should contain all 5 lines since it's less than 20
         expect(capturedEvent, contains('"stackTrace":['));
@@ -107,11 +107,11 @@ void main() {
 
         final record = LogRecord(Level.SEVERE, 'Error message', 'TestLogger', 'Test error', manyLinesStackTrace);
 
-        when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {});
+        when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {});
 
         await logHandler.handle(record);
 
-        final capturedEvent = verify(() => mockPapertrailApiWrapper.trackEvent(captureAny())).captured.first as String;
+        final capturedEvent = verify(() => mockLogApiWrapper.trackEvent(captureAny())).captured.first as String;
 
         // Should be truncated to 20 lines
         expect(capturedEvent, contains('"stackTrace":['));
@@ -127,11 +127,11 @@ void main() {
 
         final record = LogRecord(Level.SEVERE, 'Error message', 'TestLogger', 'Test error', stackTraceWithLocation);
 
-        when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {});
+        when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {});
 
         await logHandler.handle(record);
 
-        final capturedEvent = verify(() => mockPapertrailApiWrapper.trackEvent(captureAny())).captured.first as String;
+        final capturedEvent = verify(() => mockLogApiWrapper.trackEvent(captureAny())).captured.first as String;
 
         // Should extract and include error location
         expect(capturedEvent, contains('"errorLocation":"package:dart_frog_shared/logging/log_handler.dart:111:18"'));
@@ -142,11 +142,11 @@ void main() {
 
         final record = LogRecord(Level.SEVERE, 'Error message', 'TestLogger', 'Test error', stackTraceWithoutLocation);
 
-        when(() => mockPapertrailApiWrapper.trackEvent(any())).thenAnswer((_) async {});
+        when(() => mockLogApiWrapper.trackEvent(any())).thenAnswer((_) async {});
 
         await logHandler.handle(record);
 
-        final capturedEvent = verify(() => mockPapertrailApiWrapper.trackEvent(captureAny())).captured.first as String;
+        final capturedEvent = verify(() => mockLogApiWrapper.trackEvent(captureAny())).captured.first as String;
 
         // Should not include errorLocation when it cannot be extracted
         expect(capturedEvent, isNot(contains('"errorLocation"')));
