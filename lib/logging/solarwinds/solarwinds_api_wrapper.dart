@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
@@ -13,7 +13,7 @@ class SolarWindsApiWrapper extends LogApiWrapper {
   final _logger = Logger('SolarWindsApiWrapper');
 
   /// Track if we've already warned about authentication issues
-  static bool _hasWarnedAboutAuth = false;
+  bool _hasWarnedAboutAuth = false;
 
   /// Creates a SolarWinds API wrapper
   ///
@@ -58,7 +58,11 @@ class SolarWindsApiWrapper extends LogApiWrapper {
       // Handle the response
       if (response.statusCode != 200) {
         // Log to console for Cloud Run logs
-        print('Failed to send event to SolarWinds. Status code: ${response.statusCode}');
+        log(
+          'Failed to send event to SolarWinds. Status code: ${response.statusCode}',
+          name: 'SolarWindsApiWrapper',
+          level: Level.SEVERE.value,
+        );
 
         // Also log locally if this is an auth issue
         if (response.statusCode == 401 && !_hasWarnedAboutAuth) {
@@ -68,11 +72,15 @@ class SolarWindsApiWrapper extends LogApiWrapper {
       }
     } catch (e) {
       // Always log to console for Cloud Run visibility
-      print('Error sending event to SolarWinds: $e');
+      log('Error sending event to SolarWinds: $e', name: 'SolarWindsApiWrapper', level: Level.SEVERE.value);
 
       // Log more details for DioErrors
       if (e is DioException) {
-        print('SolarWinds error details - Type: ${e.type}, Message: ${e.message}, Response: ${e.response?.statusCode}');
+        log(
+          'SolarWinds error details - Type: ${e.type}, Message: ${e.message}, Response: ${e.response?.statusCode}',
+          name: 'SolarWindsApiWrapper',
+          level: Level.SEVERE.value,
+        );
 
         // Special handling for authentication errors
         if (e.response?.statusCode == 401 && !_hasWarnedAboutAuth) {
