@@ -19,8 +19,27 @@ abstract class RequestContextDetails {
   /// Request endpoint
   Uri get endpoint => context.request.uri;
 
-  /// Request headers
-  Map<String, String> get requestHeaders => context.request.headers;
+  /// Whitelisted safe headers to log
+  static const Set<String> _safeHeaders = {
+    'user-agent',
+    'host',
+    'x-forwarded-for',
+    'x-cloud-trace-context',
+  };
+
+  /// Request headers (filtered to only include safe headers)
+  Map<String, String> get requestHeaders {
+    final headers = context.request.headers;
+    final safeHeadersMap = <String, String>{};
+
+    for (final key in headers.keys) {
+      if (_safeHeaders.contains(key.toLowerCase())) {
+        safeHeadersMap[key] = headers[key]!;
+      }
+    }
+
+    return safeHeadersMap;
+  }
 
   /// Remote address
   InternetAddress get remoteAddress => context.request.connectionInfo.remoteAddress;
@@ -37,7 +56,7 @@ abstract class RequestContextDetails {
     'endpoint': endpoint.toString(),
     'request_body': obfuscateUserData(requestBody),
     'remote_address': remoteAddress.address,
-    'request_headers': obfuscateUserData(requestHeaders),
+    'request_headers': requestHeaders,
   };
 
   /// Obfuscates the user data in the request body (password field)
