@@ -69,6 +69,17 @@ The library provides a comprehensive set of API exceptions that can be easily co
 - `InternalServerErrorException` (500) - For internal server errors
 - `DataException` (500) - For data-related errors
 
+### Error Handler Middleware
+
+Centralized error handling middleware that automatically catches and converts exceptions to JSON responses:
+
+- Automatically catches `ApiException` and converts to proper HTTP responses
+- Wraps unexpected exceptions in `InternalServerErrorException`
+- Logs all errors with appropriate severity levels
+- Supports debug mode to include internal error details
+- Eliminates ~20 lines of try-catch boilerplate per route
+- Ensures consistent error response format across all endpoints
+
 ### Logging
 
 Provides a centralized logging system with support for multiple logging services:
@@ -92,7 +103,41 @@ Firebase App Check integration for protecting your APIs from abuse:
 
 ## Usage
 
-### Exception Handling
+### Error Handler Middleware (Recommended)
+
+The error handler middleware automatically catches and converts exceptions, eliminating the need for manual try-catch in route handlers:
+
+```dart
+import 'package:dart_frog/dart_frog.dart';
+import 'package:dart_frog_shared/dart_frog_shared.dart';
+import 'package:logging/logging.dart';
+
+// In your _middleware.dart file
+Handler middleware(Handler handler) {
+  final logger = Logger('MyApi');
+
+  return handler
+    .use(provider<Logger>((_) => logger))
+    .use(errorHandlerMiddleware(debug: env['DEBUG_MODE'] == 'true'));
+}
+
+// In your route handler - much simpler!
+Future<Response> onRequest(RequestContext context) async {
+  // Just throw exceptions directly - middleware handles conversion
+  if (invalidInput) {
+    throw BadRequestException(
+      message: 'Internal debug: Invalid email format',
+      responseBodyMessage: 'Please provide a valid email',
+    );
+  }
+
+  return Response.json(body: {'success': true});
+}
+```
+
+### Exception Handling (Manual)
+
+If you need custom error handling for specific routes, you can still handle exceptions manually:
 
 ```dart
 import 'package:dart_frog_shared/dart_frog_shared.dart';

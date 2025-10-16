@@ -20,12 +20,7 @@ abstract class RequestContextDetails {
   Uri get endpoint => context.request.uri;
 
   /// Whitelisted safe headers to log
-  static const Set<String> _safeHeaders = {
-    'user-agent',
-    'host',
-    'x-forwarded-for',
-    'x-cloud-trace-context',
-  };
+  static const Set<String> _safeHeaders = {'user-agent', 'host', 'x-forwarded-for', 'x-cloud-trace-context'};
 
   /// Request headers (filtered to only include safe headers)
   Map<String, String> get requestHeaders {

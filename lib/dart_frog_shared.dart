@@ -14,5 +14,6 @@ export 'logging/request_context_details.dart';
 export 'logging/solarwinds/solarwinds_api_wrapper.dart';
 export 'middleware/cors_config.dart';
 export 'middleware/cors_middleware.dart';
+export 'middleware/error_handler_middleware.dart';
 export 'middleware/rate_limit_config.dart';
 export 'middleware/rate_limit_middleware.dart';
