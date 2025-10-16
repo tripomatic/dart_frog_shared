@@ -174,6 +174,73 @@ Handler middleware(Handler handler) {
 }
 ```
 
+### Error Handler Middleware
+Centralized exception handling that automatically converts ApiExceptions to JSON responses:
+
+```dart
+// In _middleware.dart
+Handler middleware(Handler handler) {
+  final logger = Logger('MyApi');
+
+  return handler
+    .use(provider<Logger>((_) => logger))
+    .use(errorHandlerMiddleware(debug: env['DEBUG_MODE'] == 'true'))
+    .use(corsMiddleware(config: corsConfig))
+    .use(rateLimitMiddleware(config: rateLimitConfig));
+}
+```
+
+**Benefits:**
+- Eliminates ~20 lines of try-catch boilerplate per route
+- Ensures consistent error response format across all endpoints
+- Automatically logs all errors with appropriate severity levels
+- Supports debug mode to include internal error details
+
+**Route handlers become much simpler:**
+
+```dart
+// BEFORE (without error handler middleware)
+Future<Response> onRequest(RequestContext context) async {
+  final logger = context.read<Logger>();
+  try {
+    if (invalidInput) {
+      throw BadRequestException(message: 'Invalid input');
+    }
+    return Response.json(body: result);
+  } catch (e, stackTrace) {
+    if (e is ApiException) {
+      logger.warning('Error: ${e.message}', e, stackTrace);
+      return e.toResponse();
+    }
+    logger.severe('Unexpected: $e', e, stackTrace);
+    return InternalServerErrorException(message: '$e').toResponse();
+  }
+}
+
+// AFTER (with error handler middleware)
+Future<Response> onRequest(RequestContext context) async {
+  if (invalidInput) {
+    throw BadRequestException(message: 'Invalid input');
+  }
+  return Response.json(body: result);
+}
+// Middleware automatically catches and converts exceptions!
+```
+
+**Custom error handling is still possible:**
+
+```dart
+Future<Response> onRequest(RequestContext context) async {
+  try {
+    return await specialOperation();
+  } on SpecificException catch (e) {
+    // Custom handling for this specific exception
+    return Response.json(body: {'custom': 'response'});
+  }
+  // All other exceptions caught by middleware
+}
+```
+
 ## Important Notes
 - This is a shared library - changes affect multiple Dart Frog projects
 - Maintain backward compatibility when adding features
