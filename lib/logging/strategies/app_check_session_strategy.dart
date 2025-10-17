@@ -16,6 +16,25 @@ import 'package:dart_frog_shared/logging/strategies/session_tracking_strategy.da
 /// (~1 hour) but reused across API calls, the hash provides a good approximation
 /// of a user session (~5 minutes of activity).
 ///
+/// **SECURITY WARNING**: This strategy decodes and extracts information from
+/// App Check JWTs WITHOUT signature verification. It is designed ONLY for
+/// logging purposes and MUST be used in combination with Firebase App Check
+/// middleware that verifies the token signature.
+///
+/// **NEVER rely on unverified App Check tokens for authorization decisions.**
+///
+/// Proper middleware order:
+/// ```dart
+/// Handler middleware(Handler handler) {
+///   return handler
+///     .use(appCheckMiddleware(config: appCheckConfig))  // Verifies token first
+///     .use(progressiveContextMiddleware(
+///       sessionStrategy: AppCheckSessionStrategy(),  // Safe to extract after verification
+///     ))
+///     .use(errorHandlerMiddleware());
+/// }
+/// ```
+///
 /// Example App ID format: `1:123456789:android:abc123def456`
 class AppCheckSessionStrategy implements SessionTrackingStrategy {
   /// Header name for Firebase App Check token

@@ -153,12 +153,33 @@ class ProgressiveRequestContext {
   ///
   /// Use this to add domain-specific information that should be included in logs.
   ///
+  /// **Standard field names** (automatically populated, do not override):
+  /// - `request_id` - Unique request identifier
+  /// - `timestamp` - Request start time
+  /// - `method` - HTTP method (GET, POST, etc.)
+  /// - `endpoint` - Request path
+  /// - `remote_address` - Client IP address
+  /// - `request_headers` - Safe headers (whitelisted)
+  /// - `trace_id` - Distributed tracing trace ID
+  /// - `span_id` - Distributed tracing span ID
+  /// - `client_platform` - Platform (android/ios/web)
+  /// - `app_check_session_hash` - App Check session hash
+  /// - `app_check_app_id` - Full App Check app ID
+  /// - `user_id` - Firebase user ID
+  /// - `status_code` - HTTP response status
+  /// - `duration_ms` - Request duration
+  /// - `error_type` - Error class name
+  /// - `error_message` - Error description
+  ///
   /// Example:
   /// ```dart
   /// context.addField('cache_hit', true);
   /// context.addField('provider', 'openweathermap');
   /// context.addField('api_response_time_ms', 245);
   /// ```
+  ///
+  /// Note: Custom fields with the same name as standard fields will override
+  /// the standard values in the JSON output.
   void addField(String key, dynamic value) {
     _customFields[key] = value;
   }
@@ -182,14 +203,14 @@ class ProgressiveRequestContext {
 
     if (error != null) {
       errorObject = error;
+      // Get the error type directly from the object's runtime type
+      errorType = error.runtimeType.toString();
+
       if (error is ApiException) {
-        // Extract error type name from class (avoid runtimeType per project conventions)
-        errorType = error.toString().split(':').first;
         errorMessage = error.message;
         // Use ApiException status code if statusCode not explicitly provided
         this.statusCode ??= error.statusCode;
       } else {
-        errorType = 'unexpected_error';
         errorMessage = error.toString();
         this.statusCode ??= 500;
       }

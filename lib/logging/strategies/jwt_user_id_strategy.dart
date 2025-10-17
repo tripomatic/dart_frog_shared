@@ -8,6 +8,25 @@ import 'package:dart_frog_shared/logging/strategies/user_id_strategy.dart';
 /// Extracts the user ID from the `sub` claim of a Firebase Auth JWT token
 /// in the `Authorization: Bearer <token>` header.
 ///
+/// **SECURITY WARNING**: This strategy decodes and extracts information from
+/// JWTs WITHOUT signature verification. It is designed ONLY for logging purposes
+/// and MUST be used in combination with proper authentication middleware that
+/// verifies the JWT signature.
+///
+/// **NEVER rely on unverified JWT data for authorization decisions.**
+///
+/// Proper middleware order:
+/// ```dart
+/// Handler middleware(Handler handler) {
+///   return handler
+///     .use(firebaseAuthMiddleware())  // Verifies JWT signature first
+///     .use(progressiveContextMiddleware(
+///       userIdStrategy: JwtUserIdStrategy(),  // Safe to extract after verification
+///     ))
+///     .use(errorHandlerMiddleware());
+/// }
+/// ```
+///
 /// The Firebase UID is not considered PII and is safe to log in protected
 /// log systems for debugging and user-specific issue tracking.
 class JwtUserIdStrategy implements UserIdStrategy {
