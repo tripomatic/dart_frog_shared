@@ -41,9 +41,17 @@ dart format --set-exit-if-changed .
 - Polymorphic logging service support via `LogApiWrapper` abstract base class
 - `SolarWindsApiWrapper` - Modern Bearer token authentication for SolarWinds Observability (recommended)
 - `PapertrailApiWrapper` - Legacy Basic Auth for Papertrail (deprecated)
-- Request context tracking through `RequestContextDetails` hierarchy
+- Progressive request context with pluggable strategies for request ID, session tracking, and user identification
 - Automatic sanitization of sensitive data (passwords show as `***(length)`, tokens partially obfuscated)
 - Developer mode for local-only logging
+
+### Progressive Request Context
+- `ProgressiveRequestContext` provides structured logging with automatic context enrichment
+- Strategy pattern for pluggable request ID generation, session tracking, and user identification
+- Supports Google Cloud Run trace IDs, UUID generation, Firebase App Check sessions, and JWT user IDs
+- Context is mutable and progressively enriched as request flows through layers
+- Automatic finalization with duration, status code, and error tracking
+- Custom fields via `addField(key, value)` for domain-specific data
 
 ### App Check Architecture
 - `appCheckMiddleware` creates middleware function with captured config and services
@@ -96,9 +104,99 @@ LogHandler.create(
 );
 ```
 
-### Logging Requests
+### Progressive Request Context (Recommended)
+
+**Setting up middleware chain:**
 ```dart
-final details = ExceptionRequestContextDetails(
+// In routes/_middleware.dart
+Handler middleware(Handler handler) {
+  final logger = Logger('api-weather');
+
+  return handler
+    .use(provider<Logger>((_) => logger))
+
+    // Progressive context middleware (required for rich logging)
+    .use(progressiveContextMiddleware(
+      requestIdStrategy: GCloudTraceStrategy(),  // or UuidStrategy()
+      sessionStrategy: AppCheckSessionStrategy(),  // optional
+      userIdStrategy: JwtUserIdStrategy(),        // optional
+    ))
+
+    // Error handler with automatic context logging
+    .use(errorHandlerMiddleware(debug: env['DEBUG_MODE'] == 'true'))
+
+    // Other middleware
+    .use(corsMiddleware())
+    .use(rateLimitMiddleware(...))
+    .use(appCheckMiddleware(...));
+}
+```
+
+**Using in route handlers:**
+```dart
+Future<Response> onRequest(RequestContext context) async {
+  final progressiveContext = context.read<ProgressiveRequestContext>();
+  final logger = context.read<Logger>();
+
+  // Add custom fields during processing
+  progressiveContext.addField('cache_hit', true);
+  progressiveContext.addField('provider', 'openweathermap');
+  progressiveContext.addField('api_response_time_ms', 245);
+
+  // Just throw exceptions - middleware handles logging automatically
+  if (invalidInput) {
+    throw BadRequestException(message: 'Invalid input');
+  }
+
+  // Log successful requests (optional)
+  progressiveContext.logSuccess(logger);
+
+  return Response.json(body: result);
+}
+```
+
+**Creating custom context classes:**
+```dart
+class WeatherRequestContext extends ProgressiveRequestContext {
+  final double latitude;
+  final double longitude;
+
+  bool? cacheHit;
+  String? provider;
+  int? apiResponseTimeMs;
+
+  WeatherRequestContext({
+    required RequestContext dartFrogContext,
+    required RequestIdStrategy requestIdStrategy,
+    SessionTrackingStrategy? sessionStrategy,
+    UserIdStrategy? userIdStrategy,
+    required this.latitude,
+    required this.longitude,
+  }) : super(
+    dartFrogContext: dartFrogContext,
+    requestIdStrategy: requestIdStrategy,
+    sessionStrategy: sessionStrategy,
+    userIdStrategy: userIdStrategy,
+  );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      ...super.toJson(),
+      'latitude': latitude,
+      'longitude': longitude,
+      if (cacheHit != null) 'cache_hit': cacheHit,
+      if (provider != null) 'provider': provider,
+      if (apiResponseTimeMs != null) 'api_response_time_ms': apiResponseTimeMs,
+    };
+  }
+}
+```
+
+### Legacy Logging (Deprecated)
+```dart
+// Old approach - use ProgressiveRequestContext instead
+final details = ExceptionRequestContextDetails.fromException(
   context,
   await context.jsonOrBody(),
   exception
@@ -243,7 +341,12 @@ Future<Response> onRequest(RequestContext context) async {
 
 ## Important Notes
 - This is a shared library - changes affect multiple Dart Frog projects
-- Maintain backward compatibility when adding features
 - Password obfuscation is critical for security - never log raw passwords
 - The `lint: ^2.8.0` package enforces strict Dart analysis rules
-- Version follows semantic versioning (currently 1.8.0)
+- Version follows semantic versioning (currently 2.0.0)
+
+## Breaking Changes in 2.0.0
+- `ExceptionRequestContextDetails` constructor changed - use factory `ExceptionRequestContextDetails.fromException()` for migration
+- `ResponseRequestContextDetails` deleted (not used anywhere)
+- `RequestContextDetails` deprecated in favor of `ProgressiveRequestContext`
+- New dependencies: `uuid` and `crypto` (crypto was already transitive)

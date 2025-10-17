@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:dart_frog_shared/logging/request_context_details.dart';
 import 'package:test/test.dart';
 

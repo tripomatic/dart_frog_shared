@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dart_frog_shared/logging/log_api_wrapper.dart';
-import 'package:logging/logging.dart';
+import 'package:dart_frog_shared/logging/progressive_request_context.dart';
 import 'package:dart_frog_shared/logging/request_context_details.dart';
+import 'package:logging/logging.dart';
 
 /// Handles logging for the application
 ///
@@ -52,6 +53,8 @@ class LogHandler {
   /// Creates an event map from a log record
   Map<String, dynamic> _createEventMap(LogRecord record, bool isDevMode) {
     final details = switch (record.object) {
+      final ProgressiveRequestContext prc => prc.toJson(),
+      // ignore: deprecated_member_use_from_same_package
       final RequestContextDetails rcd => rcd.toJson(),
       final Object o => {'object': '$o'},
       _ => null,
