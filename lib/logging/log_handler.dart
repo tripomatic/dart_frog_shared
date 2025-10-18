@@ -69,7 +69,12 @@ class LogHandler {
       'logger': record.loggerName,
       'message': record.message,
       'environment': isDevMode ? 'debug' : 'release',
-      if (record.error != null) 'error': record.error?.toString(),
+      // Don't add error field if error is actually a context object being passed for logging
+      if (record.error != null &&
+          record.error is! ProgressiveRequestContext &&
+          // ignore: deprecated_member_use_from_same_package
+          record.error is! RequestContextDetails)
+        'error': record.error?.toString(),
       if (record.stackTrace != null) 'stackTrace': _reducedStackTrace(record.stackTrace!),
       if (errorLocation != null) 'errorLocation': errorLocation,
       ...?details,
