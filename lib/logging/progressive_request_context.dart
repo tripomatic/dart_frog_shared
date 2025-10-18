@@ -129,7 +129,7 @@ class ProgressiveRequestContext {
     }
 
     // Auto-populate basic request information
-    method = dartFrogContext.request.method.value;
+    method = dartFrogContext.request.method.name.toUpperCase();
     endpoint = dartFrogContext.request.uri.toString();
     remoteAddress = dartFrogContext.request.connectionInfo.remoteAddress;
     safeHeaders = _extractSafeHeaders(dartFrogContext);
