@@ -1,3 +1,8 @@
+## 2.0.1
+
+- Fixed bug where ProgressiveRequestContext objects were incorrectly appearing in the 'error' field of JSON logs for successful requests
+- Updated LogHandler to filter out context objects from the error field when logging via extension methods
+
 ## 2.0.0
 
 - **BREAKING CHANGE**: Added progressive request context enrichment system for enhanced structured logging
