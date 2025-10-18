@@ -3,10 +3,16 @@ import 'dart:math';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_frog_shared/exceptions/json_exportable.dart';
+import 'package:dart_frog_shared/logging/progressive_request_context.dart';
+import 'package:dart_frog_shared/logging/strategies/uuid_strategy.dart';
 
 /// Base class for request details
 ///
-/// See implementation: [ExceptionRequestContextDetails] and [ResponseRequestContextDetails]
+/// @deprecated Use [ProgressiveRequestContext] instead.
+/// This class is kept for backward compatibility only.
+///
+/// See implementation: [ExceptionRequestContextDetails]
+@Deprecated('Use ProgressiveRequestContext instead')
 abstract class RequestContextDetails {
   /// Request context
   final RequestContext context;
@@ -14,6 +20,7 @@ abstract class RequestContextDetails {
   /// Request body
   final dynamic requestBody;
 
+  @Deprecated('Use ProgressiveRequestContext instead')
   RequestContextDetails(this.context, this.requestBody);
 
   /// Request endpoint
@@ -82,52 +89,66 @@ abstract class RequestContextDetails {
   }
 }
 
-/// Details for a request with exception
+/// Details for a request with exception.
+///
+/// Now extends [ProgressiveRequestContext] for enhanced logging capabilities.
 ///
 /// Usage:
 /// ```dart
-/// final result = ExceptionRequestContextDetails(context, await context.jsonOrBody(), exception);
+/// // Preferred: Use factory for easier migration
+/// final details = ExceptionRequestContextDetails.fromException(
+///   context,
+///   await context.jsonOrBody(),
+///   exception,
+/// );
+///
+/// // Or use directly with strategies
+/// final details = ExceptionRequestContextDetails(
+///   dartFrogContext: context,
+///   requestIdStrategy: UuidStrategy(),
+///   error: exception,
+/// );
 /// ```
-class ExceptionRequestContextDetails extends RequestContextDetails {
-  final Object error;
+class ExceptionRequestContextDetails extends ProgressiveRequestContext {
+  /// Creates exception context details with a backward-compatible factory.
+  ///
+  /// This factory provides an easier migration path from the old API.
+  /// The [requestBody] is added as a custom field if provided.
+  factory ExceptionRequestContextDetails.fromException(RequestContext context, dynamic requestBody, Object error) {
+    final contextDetails = ExceptionRequestContextDetails._(
+      dartFrogContext: context,
+      requestIdStrategy: UuidStrategy(),
+      error: error,
+    );
 
-  ExceptionRequestContextDetails(super.context, super.body, this.error);
+    // Add request body as custom field if provided
+    if (requestBody != null) {
+      // ignore: deprecated_member_use_from_same_package
+      contextDetails.addField('request_body', RequestContextDetails.obfuscateUserData(requestBody));
+    }
 
-  Map<String, dynamic> get errorToJson => switch (error) {
+    return contextDetails;
+  }
+
+  /// Creates exception context details with full strategy configuration.
+  ///
+  /// This constructor allows full control over context creation with custom strategies.
+  ExceptionRequestContextDetails._({
+    required super.dartFrogContext,
+    required super.requestIdStrategy,
+    required Object error,
+  }) {
+    // Finalize immediately with error information
+    finalize(error: error);
+  }
+
+  /// Legacy compatibility method for accessing error as JSON.
+  @Deprecated('Error information is now in the base class. Use toJson() instead.')
+  Map<String, dynamic> get errorToJson => switch (errorObject) {
     final JsonExportable e => e.toJson(),
-    // final ApiException e => {
-    //     'message': e.message,
-    //     'response_message': e.responseMessage,
-    //     'status_code': e.statusCode,
-    //   },
-    final Object e => {'message': e.toString(), 'status_code': 500},
+    final Object e => {'message': e.toString(), 'status_code': statusCode ?? 500},
+    null => {'message': 'Unknown error', 'status_code': 500},
   };
-
-  @override
-  Map<String, dynamic> toJson() => {...errorToJson, ...super.toJson()};
-
-  @override
-  String toString() => '[${errorToJson['status_code']}] ${super.toString()}: ${errorToJson['message']}';
-}
-
-/// Details for a request with response
-///
-/// Usage:
-/// ```dart
-/// final result = ResponseRequestContextDetails(context, await context.jsonOrBody(), response);
-/// ```
-class ResponseRequestContextDetails extends RequestContextDetails {
-  final Response response;
-
-  ResponseRequestContextDetails(super.context, super.body, this.response);
-
-  Map<String, dynamic> get responseToJson => {'status_code': response.statusCode};
-
-  @override
-  Map<String, dynamic> toJson() => {...responseToJson, ...super.toJson()};
-
-  @override
-  String toString() => '[${response.statusCode}] ${super.toString()}';
 }
 
 /// Extension to process the request body

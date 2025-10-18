@@ -64,7 +64,7 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
         // Log the error with context
         try {
           final body = await _getRequestBody(context);
-          final details = ExceptionRequestContextDetails(context, body, e);
+          final details = ExceptionRequestContextDetails.fromException(context, body, e);
           logger.severe('App Check verification failed with context', details);
         } catch (_) {
           // If logging with context fails, just log the error

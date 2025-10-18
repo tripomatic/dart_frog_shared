@@ -1,3 +1,62 @@
+## 2.0.0
+
+- **BREAKING CHANGE**: Added progressive request context enrichment system for enhanced structured logging
+- Added `ProgressiveRequestContext` class that progressively enriches request context with metadata
+- Added pluggable strategy pattern for flexible context extraction:
+  - `RequestIdStrategy` interface for request ID generation
+  - `GCloudTraceStrategy` for Google Cloud Run distributed tracing integration (with UUID fallback)
+  - `UuidStrategy` for UUID-based request IDs
+  - `SessionTrackingStrategy` interface for session tracking
+  - `AppCheckSessionStrategy` for Firebase App Check session correlation via MD5 hash
+  - `UserIdStrategy` interface for user identification
+  - `JwtUserIdStrategy` for extracting Firebase UID from JWT tokens
+- Added `progressiveContextMiddleware` for automatic context injection
+- Enhanced `errorHandlerMiddleware` to use `ProgressiveRequestContext` for rich error logging
+- Updated `ExceptionRequestContextDetails` to extend `ProgressiveRequestContext`
+  - Added backward-compatible factory method `fromException()`
+  - Private constructor now uses `UuidStrategy` by default
+- Deprecated `RequestContextDetails` base class (use `ProgressiveRequestContext` instead)
+- Removed `ResponseRequestContextDetails` (not used)
+- Fixed `LogHandler` to properly recognize and serialize `ProgressiveRequestContext`
+- Added `crypto` (^3.0.6) and `uuid` (^4.5.1) dependencies
+- Added comprehensive documentation and usage examples in CLAUDE.md
+
+### Migration Guide
+
+**Before (v1.x):**
+```dart
+Handler middleware(Handler handler) {
+  return handler
+    .use(provider<Logger>((_) => logger))
+    .use(errorHandlerMiddleware(debug: isDev));
+}
+
+// In routes - manual context creation
+final details = ExceptionRequestContextDetails(context, await context.jsonOrBody(), e);
+```
+
+**After (v2.x):**
+```dart
+Handler middleware(Handler handler) {
+  return handler
+    .use(provider<Logger>((_) => logger))
+    .use(progressiveContextMiddleware(
+      requestIdStrategy: GCloudTraceStrategy(), // or UuidStrategy()
+      sessionStrategy: AppCheckSessionStrategy(),
+      userIdStrategy: JwtUserIdStrategy(),
+    ))
+    .use(errorHandlerMiddleware(debug: isDev));
+}
+
+// In routes - use factory method for backward compatibility
+final details = ExceptionRequestContextDetails.fromException(context, await context.jsonOrBody(), e);
+
+// Or access progressive context directly
+final progressiveContext = context.read<ProgressiveRequestContext>();
+progressiveContext.addField('cache_hit', true);
+progressiveContext.logSuccess(logger);
+```
+
 ## 1.9.1
 
 - Improved documentation to clarify that `region` parameter must match your SolarWinds organization's data center
