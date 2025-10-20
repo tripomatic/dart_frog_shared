@@ -76,6 +76,10 @@ class ProgressiveRequestContext {
   // Custom fields (extensible)
   final Map<String, dynamic> _customFields = {};
 
+  // Request body (for error debugging)
+  /// Raw request body (optional, for debugging failed requests)
+  String? requestBody;
+
   // Response tracking
   /// HTTP response status code
   int? statusCode;
@@ -184,6 +188,21 @@ class ProgressiveRequestContext {
     _customFields[key] = value;
   }
 
+  /// Captures the raw request body for error debugging.
+  ///
+  /// Call this early in request processing (before parsing) to ensure
+  /// the raw body is available in error logs if parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final body = await request.body();
+  /// progressiveContext.captureRequestBody(body);
+  /// final json = jsonDecode(body);  // If this fails, we have the raw body in logs
+  /// ```
+  void captureRequestBody(String body) {
+    requestBody = body;
+  }
+
   /// Finalizes the context with response or error information.
   ///
   /// Call this at the end of request processing to set the final status code,
@@ -245,6 +264,9 @@ class ProgressiveRequestContext {
     // Add custom fields
     json.addAll(_customFields);
 
+    // Add request body (for error debugging)
+    if (requestBody != null) json['request_body'] = requestBody;
+
     // Add response/error fields
     if (statusCode != null) json['status_code'] = statusCode;
     if (durationMs != null) json['duration_ms'] = durationMs;
@@ -286,6 +308,38 @@ extension ProgressiveRequestContextLogging on ProgressiveRequestContext {
     // Pass context as message (not error) so LogHandler can extract it from record.object
     // The logger will call toString() on the context to generate the log message
     logger.info(this);
+  }
+
+  /// Log error with WARNING (4xx) or SEVERE (5xx) level.
+  ///
+  /// Automatically finalizes the context with error details if not already finalized.
+  /// Uses WARNING for client errors (400-499) and SEVERE for server errors (500+).
+  ///
+  /// Usage:
+  /// ```dart
+  /// try {
+  ///   // Process request
+  /// } catch (e, stackTrace) {
+  ///   progressiveContext.logError(logger, e, stackTrace);
+  ///   rethrow;
+  /// }
+  /// ```
+  void logError(Logger logger, Object error, StackTrace stackTrace, {int? statusCode}) {
+    // Determine status code from error if not provided
+    final finalStatusCode = statusCode ??
+        (error is ApiException ? error.statusCode : 500);
+
+    if (this.statusCode == null) {
+      finalize(statusCode: finalStatusCode, error: error);
+    }
+
+    // Log with appropriate level based on status code
+    // Pass context as message so LogHandler can extract it from record.object
+    if (finalStatusCode >= 500) {
+      logger.severe(this, error, stackTrace);
+    } else {
+      logger.warning(this, error, stackTrace);
+    }
   }
 
   /// Log with custom level and message.

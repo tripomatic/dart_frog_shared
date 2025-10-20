@@ -83,13 +83,8 @@ Middleware errorHandlerMiddleware({bool debug = false}) {
         final logger = context.read<Logger>();
 
         if (progressiveContext != null) {
-          // Rich logging with full context
-          progressiveContext.finalize(statusCode: e.statusCode, error: e);
-          if (e.statusCode >= 500) {
-            logger.severe('API error: ${e.message}', progressiveContext, stackTrace);
-          } else {
-            logger.warning('API error: ${e.message}', progressiveContext, stackTrace);
-          }
+          // Rich logging with full context using new logError method
+          progressiveContext.logError(logger, e, stackTrace);
         } else {
           // Fallback to simple logging (backward compatibility)
           if (e.statusCode >= 500) {
@@ -106,9 +101,8 @@ Middleware errorHandlerMiddleware({bool debug = false}) {
         final logger = context.read<Logger>();
 
         if (progressiveContext != null) {
-          // Rich logging with full context
-          progressiveContext.finalize(statusCode: 500, error: e);
-          logger.severe('Unexpected error: $e', progressiveContext, stackTrace);
+          // Rich logging with full context using new logError method
+          progressiveContext.logError(logger, e, stackTrace, statusCode: 500);
         } else {
           // Fallback to simple logging (backward compatibility)
           logger.severe('Unexpected error: $e', e, stackTrace);
