@@ -188,18 +188,21 @@ class ProgressiveRequestContext {
     _customFields[key] = value;
   }
 
+  /// Gets the captured raw request body.
+  String? get capturedRequestBody => requestBody;
+
   /// Captures the raw request body for error debugging.
   ///
-  /// Call this early in request processing (before parsing) to ensure
+  /// Set this early in request processing (before parsing) to ensure
   /// the raw body is available in error logs if parsing fails.
   ///
   /// Example:
   /// ```dart
   /// final body = await request.body();
-  /// progressiveContext.captureRequestBody(body);
+  /// progressiveContext.capturedRequestBody = body;
   /// final json = jsonDecode(body);  // If this fails, we have the raw body in logs
   /// ```
-  void captureRequestBody(String body) {
+  set capturedRequestBody(String? body) {
     requestBody = body;
   }
 
@@ -326,8 +329,7 @@ extension ProgressiveRequestContextLogging on ProgressiveRequestContext {
   /// ```
   void logError(Logger logger, Object error, StackTrace stackTrace, {int? statusCode}) {
     // Determine status code from error if not provided
-    final finalStatusCode = statusCode ??
-        (error is ApiException ? error.statusCode : 500);
+    final finalStatusCode = statusCode ?? (error is ApiException ? error.statusCode : 500);
 
     if (this.statusCode == null) {
       finalize(statusCode: finalStatusCode, error: error);
