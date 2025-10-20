@@ -279,20 +279,25 @@ extension ProgressiveRequestContextLogging on ProgressiveRequestContext {
   /// context.addField('cache_hit', true);
   /// context.logSuccess(logger);  // Logs with full context
   /// ```
-  void logSuccess(Logger logger, {String? message, int statusCode = 200}) {
+  void logSuccess(Logger logger, {int statusCode = 200}) {
     if (this.statusCode == null) {
       finalize(statusCode: statusCode);
     }
-    logger.info(message ?? toString(), this);
+    // Pass context as message (not error) so LogHandler can extract it from record.object
+    // The logger will call toString() on the context to generate the log message
+    logger.info(this);
   }
 
   /// Log with custom level and message.
   ///
+  /// For custom logging scenarios, pass the context as the message parameter.
+  /// Do not use this for success logging - use logSuccess() instead.
+  ///
   /// Usage:
   /// ```dart
-  /// context.log(logger, Level.WARNING, 'Slow response detected');
+  /// context.log(logger, Level.WARNING);  // Uses toString() for message
   /// ```
-  void log(Logger logger, Level level, String message) {
-    logger.log(level, message, this);
+  void log(Logger logger, Level level) {
+    logger.log(level, this);
   }
 }

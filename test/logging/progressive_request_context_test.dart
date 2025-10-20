@@ -339,7 +339,7 @@ void main() {
         expect(records, hasLength(1));
         expect(records[0].level, equals(Level.INFO));
         expect(records[0].message, equals(context.toString()));
-        expect(records[0].error, isA<ProgressiveRequestContext>());
+        expect(records[0].object, isA<ProgressiveRequestContext>());
 
         await subscription.cancel();
       });
@@ -351,15 +351,15 @@ void main() {
         final records = <LogRecord>[];
         final subscription = logger.onRecord.listen(records.add);
 
-        context.log(logger, Level.WARNING, 'Custom message');
+        context.log(logger, Level.WARNING);
 
         // Allow async logging to complete
         await Future<void>.delayed(Duration(milliseconds: 10));
 
         expect(records, hasLength(1));
         expect(records[0].level, equals(Level.WARNING));
-        expect(records[0].message, equals('Custom message'));
-        expect(records[0].error, isA<ProgressiveRequestContext>());
+        expect(records[0].message, equals('GET https://example.com/test'));
+        expect(records[0].object, isA<ProgressiveRequestContext>());
 
         await subscription.cancel();
       });
