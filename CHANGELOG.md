@@ -1,3 +1,11 @@
+## 2.0.2
+
+- **CRITICAL FIX**: Progressive context fields (request_id, session_hash, custom fields, etc.) now properly appear in production logs
+- Fixed `logSuccess()` and `log()` extension methods to pass context as message parameter instead of error parameter
+- Logger now correctly populates `record.object` so LogHandler can extract and serialize context data
+- Removed unused `message` parameter from `logSuccess()` method
+- Updated tests to verify context appears in `record.object`
+
 ## 2.0.1
 
 - Fixed bug where ProgressiveRequestContext objects were incorrectly appearing in the 'error' field of JSON logs for successful requests
