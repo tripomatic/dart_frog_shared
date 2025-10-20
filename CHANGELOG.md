@@ -1,3 +1,15 @@
+## 2.1.0
+
+- Added request body capture support for error debugging
+  - New `capturedRequestBody` getter/setter to capture raw request body before parsing
+  - Request body automatically included in error logs when set
+- Added `logError()` extension method for comprehensive error logging
+  - Automatically determines log severity (WARNING for 4xx, SEVERE for 5xx)
+  - Passes context as message and error as error parameter for proper LogHandler extraction
+  - Automatically finalizes context with status code and error details
+- Enhanced error handler middleware to use new `logError()` method
+- Fixed analyzer warning by converting `captureRequestBody()` method to getter/setter pair
+
 ## 2.0.2
 
 - **CRITICAL FIX**: Progressive context fields (request_id, session_hash, custom fields, etc.) now properly appear in production logs
