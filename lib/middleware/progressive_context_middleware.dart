@@ -43,6 +43,7 @@ Middleware progressiveContextMiddleware({
   required RequestIdStrategy requestIdStrategy,
   SessionTrackingStrategy? sessionStrategy,
   UserIdStrategy? userIdStrategy,
+  String? appVersion,
 }) {
   return (handler) {
     return (context) async {
@@ -53,6 +54,11 @@ Middleware progressiveContextMiddleware({
         sessionStrategy: sessionStrategy,
         userIdStrategy: userIdStrategy,
       );
+
+      // Set app version if provided
+      if (appVersion != null) {
+        progressiveContext.appVersion = appVersion;
+      }
 
       // Provide to downstream handlers via Dart Frog provider system
       return await handler(context.provide<ProgressiveRequestContext>(() => progressiveContext));
