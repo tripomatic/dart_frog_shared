@@ -1,3 +1,14 @@
+## 2.2.0
+
+- Added `appVersion` field to `ProgressiveRequestContext` for deployment tracking
+  - Automatically included in all logs (success and error)
+  - Helps verify deployed versions and debug stale deployment issues
+  - Configure via `progressiveContextMiddleware(appVersion: '1.0.0+2')`
+- Fixed stack trace logging to only include traces for server errors (5xx)
+  - Client errors (4xx) no longer include stack traces
+  - Significantly reduces log size and improves readability
+  - Stack traces still logged for all server errors (500+)
+
 ## 2.1.0
 
 - Added request body capture support for error debugging
