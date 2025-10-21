@@ -321,6 +321,7 @@ extension ProgressiveRequestContextLogging on ProgressiveRequestContext {
   ///
   /// Automatically finalizes the context with error details if not already finalized.
   /// Uses WARNING for client errors (400-499) and SEVERE for server errors (500+).
+  /// Stack traces are only logged for server errors (5xx), not client errors (4xx).
   ///
   /// Usage:
   /// ```dart
@@ -341,10 +342,11 @@ extension ProgressiveRequestContextLogging on ProgressiveRequestContext {
 
     // Log with appropriate level based on status code
     // Pass context as message so LogHandler can extract it from record.object
+    // Only log stack traces for server errors (5xx), not client errors (4xx)
     if (finalStatusCode >= 500) {
       logger.severe(this, error, stackTrace);
     } else {
-      logger.warning(this, error, stackTrace);
+      logger.warning(this, error);
     }
   }
 
