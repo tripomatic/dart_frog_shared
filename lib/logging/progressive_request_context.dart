@@ -73,9 +73,6 @@ class ProgressiveRequestContext {
   /// User identifier (Firebase UID)
   String? userId;
 
-  /// Application version (from pubspec.yaml)
-  String? appVersion;
-
   // Custom fields (extensible)
   final Map<String, dynamic> _customFields = {};
 
@@ -266,7 +263,6 @@ class ProgressiveRequestContext {
     }
     if (appCheckAppId != null) json['app_check_app_id'] = appCheckAppId;
     if (userId != null) json['user_id'] = userId;
-    if (appVersion != null) json['app_version'] = appVersion;
 
     // Add custom fields
     json.addAll(_customFields);
