@@ -60,7 +60,8 @@ class SolarWindsApiWrapper extends LogApiWrapper {
       );
 
       // Handle the response
-      if (response.statusCode != 200) {
+      // SolarWinds returns 202 Accepted for successfully queued logs
+      if (response.statusCode != 200 && response.statusCode != 202) {
         // Log to console for Cloud Run logs
         log(
           'Failed to send event to SolarWinds. Status code: ${response.statusCode}',
