@@ -52,6 +52,10 @@ class SolarWindsApiWrapper extends LogApiWrapper {
   @override
   Future<void> trackEvent(String body) async {
     try {
+      // DEBUG: Use print for visibility in Cloud Run logs
+      // ignore: avoid_print
+      print('[SolarWindsApiWrapper] Sending log to SolarWinds...');
+
       // Send the POST request
       final response = await _dio.post(
         '/logs',
@@ -59,10 +63,16 @@ class SolarWindsApiWrapper extends LogApiWrapper {
         options: Options(contentType: 'application/octet-stream', headers: {'Authorization': _bearerToken}),
       );
 
+      // DEBUG: Print success
+      // ignore: avoid_print
+      print('[SolarWindsApiWrapper] Response: ${response.statusCode}');
+
       // Handle the response
       // SolarWinds returns 202 Accepted for successfully queued logs
       if (response.statusCode != 200 && response.statusCode != 202) {
         // Log to console for Cloud Run logs
+        // ignore: avoid_print
+        print('[SolarWindsApiWrapper] ERROR: Unexpected status code ${response.statusCode}');
         log(
           'Failed to send event to SolarWinds. Status code: ${response.statusCode}',
           name: 'SolarWindsApiWrapper',
@@ -76,11 +86,17 @@ class SolarWindsApiWrapper extends LogApiWrapper {
         }
       }
     } catch (e) {
+      // DEBUG: Print errors
+      // ignore: avoid_print
+      print('[SolarWindsApiWrapper] EXCEPTION: $e');
+
       // Always log to console for Cloud Run visibility
       log('Error sending event to SolarWinds: $e', name: 'SolarWindsApiWrapper', level: Level.SEVERE.value);
 
       // Log more details for DioErrors
       if (e is DioException) {
+        // ignore: avoid_print
+        print('[SolarWindsApiWrapper] DioException - Type: ${e.type}, Message: ${e.message}');
         log(
           'SolarWinds error details - Type: ${e.type}, Message: ${e.message}, Response: ${e.response?.statusCode}',
           name: 'SolarWindsApiWrapper',
