@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_firebase_admin/app_check.dart';
@@ -16,10 +17,25 @@ class FirebaseAppCheckService {
 
   FirebaseAdminApp? _app;
   AppCheck? _appCheck;
+  Completer<AppCheck>? _initCompleter;
 
   /// Gets or initializes the Firebase Admin app and AppCheck
+  ///
+  /// Thread-safe singleton initialization with automatic retry on failure.
+  /// Multiple concurrent calls will wait for the first initialization to complete.
+  /// If initialization fails, the state is reset allowing subsequent calls to retry.
   Future<AppCheck> get _firebaseAppCheck async {
     if (_appCheck != null) return _appCheck!;
+
+    // Capture existing completer before creating a new one
+    final existingCompleter = _initCompleter;
+    if (existingCompleter != null) {
+      return existingCompleter.future;
+    }
+
+    // We are the first - create completer
+    _initCompleter = Completer<AppCheck>();
+    final completer = _initCompleter!;
 
     try {
       // Use the service account JSON directly (no base64 decoding needed)
@@ -43,6 +59,8 @@ class FirebaseAppCheckService {
         _appCheck = AppCheck(_app!);
 
         _logger.info('Firebase Admin SDK initialized for project: ${_config.firebaseProjectId}');
+
+        completer.complete(_appCheck!);
         return _appCheck!;
       } finally {
         // Always delete the temp file for security
@@ -52,6 +70,11 @@ class FirebaseAppCheckService {
       }
     } catch (e, stack) {
       _logger.severe('Failed to initialize Firebase Admin SDK', e, stack);
+      completer.completeError(e, stack);
+      // Allow retry on next call by resetting all state
+      _initCompleter = null;
+      _appCheck = null;
+      _app = null;
       rethrow;
     }
   }
@@ -75,9 +98,14 @@ class FirebaseAppCheckService {
     }
   }
 
-  /// Closes the Firebase connection
+  /// Closes the Firebase connection and resets initialization state
+  ///
+  /// After calling this method, the next call to [verifyToken] will
+  /// reinitialize the Firebase Admin SDK.
   void close() {
     _app?.close();
     _app = null;
+    _appCheck = null;
+    _initCompleter = null;
   }
 }
