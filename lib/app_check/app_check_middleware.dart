@@ -17,6 +17,13 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
 
   return (handler) {
     return (context) async {
+      // Skip App Check for OPTIONS preflight requests (CORS)
+      // Browsers cannot send custom headers during preflight
+      if (context.request.method == HttpMethod.options) {
+        logger.fine('Skipping App Check for OPTIONS preflight request');
+        return handler(context);
+      }
+
       // Skip App Check for exempt paths
       final path = context.request.uri.path;
       if (config.exemptPaths.contains(path)) {
