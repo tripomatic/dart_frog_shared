@@ -1,3 +1,19 @@
+## 2.2.1
+
+- **CRITICAL FIX**: Resolved race condition in `FirebaseAppCheckService` initialization that caused `PathNotFoundException` errors during concurrent requests
+  - Implemented proper async synchronization using `Completer<AppCheck>` pattern
+  - Added atomic completer capture to prevent time-of-check-to-time-of-use (TOCTOU) race conditions
+  - Added complete state reset on initialization failure to enable proper retry behavior
+  - Enhanced documentation explaining thread-safety guarantees and retry behavior
+  - Fixes production authentication failures in api_weather, api_routing, and api_places services
+- Fixed App Check middleware to skip validation for OPTIONS preflight requests
+  - Browsers cannot send custom headers during CORS preflight
+  - Prevents 401 errors on valid CORS requests
+  - OPTIONS requests now bypass App Check validation before other middleware
+- Fixed SolarWinds API to accept 202 Accepted status code as success
+  - SolarWinds Observability API returns 202 for successful log ingestion
+  - Prevents false error logging when logs are successfully accepted
+
 ## 2.2.0
 
 - Added `appVersion` field to `ProgressiveRequestContext` for deployment tracking
