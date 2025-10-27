@@ -23,16 +23,19 @@ class FirebaseAppCheckService {
   ///
   /// Thread-safe singleton initialization with automatic retry on failure.
   /// Multiple concurrent calls will wait for the first initialization to complete.
+  /// If initialization fails, the state is reset allowing subsequent calls to retry.
   Future<AppCheck> get _firebaseAppCheck async {
     if (_appCheck != null) return _appCheck!;
 
-    // Atomically create completer if needed and capture it locally
-    final completer = _initCompleter ??= Completer<AppCheck>();
-
-    // If another thread is already initializing, wait for their result
-    if (_initCompleter != completer) {
-      return _initCompleter!.future;
+    // Capture existing completer before creating a new one
+    final existingCompleter = _initCompleter;
+    if (existingCompleter != null) {
+      return existingCompleter.future;
     }
+
+    // We are the first - create completer
+    _initCompleter = Completer<AppCheck>();
+    final completer = _initCompleter!;
 
     try {
       // Use the service account JSON directly (no base64 decoding needed)
@@ -68,8 +71,10 @@ class FirebaseAppCheckService {
     } catch (e, stack) {
       _logger.severe('Failed to initialize Firebase Admin SDK', e, stack);
       completer.completeError(e, stack);
-      // Allow retry on next call by resetting the completer
+      // Allow retry on next call by resetting all state
       _initCompleter = null;
+      _appCheck = null;
+      _app = null;
       rethrow;
     }
   }
