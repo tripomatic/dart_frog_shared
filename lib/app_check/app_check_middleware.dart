@@ -20,7 +20,7 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
       // Skip App Check for OPTIONS preflight requests (CORS)
       // Browsers cannot send custom headers during preflight
       if (context.request.method == HttpMethod.options) {
-        logger.fine('Skipping App Check for OPTIONS preflight request');
+        logger.info('Skipping App Check for OPTIONS preflight request');
         return handler(context);
       }
 
