@@ -26,6 +26,7 @@ void main() {
       when(() => context.request).thenReturn(request);
       when(() => request.uri).thenReturn(Uri.parse('/test'));
       when(() => request.headers).thenReturn({});
+      when(() => request.method).thenReturn(HttpMethod.get); // Default to GET for non-OPTIONS tests
     });
 
     test('should bypass App Check in dev mode', () async {
@@ -34,6 +35,23 @@ void main() {
         serviceAccountJson: '{"type": "service_account"}',
         enableDevMode: true,
       );
+
+      final middleware = appCheckMiddleware(config: config);
+      final middlewareHandler = middleware(handler);
+
+      final result = await middlewareHandler(context);
+
+      expect(result, equals(response));
+    });
+
+    test('should bypass App Check for OPTIONS preflight requests', () async {
+      const config = AppCheckConfig(
+        firebaseProjectId: 'test-project',
+        serviceAccountJson: '{"type": "service_account"}',
+        enableDevMode: false, // Ensure it works even in production mode
+      );
+
+      when(() => request.method).thenReturn(HttpMethod.options);
 
       final middleware = appCheckMiddleware(config: config);
       final middlewareHandler = middleware(handler);
