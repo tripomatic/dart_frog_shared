@@ -1,3 +1,10 @@
+## 2.2.2
+
+- Fixed App Check middleware to handle trailing slashes in exempt paths
+  - Paths are now normalized by removing trailing slashes before comparison (except root path "/")
+  - Ensures requests like `/ping/` correctly match exempt path `/ping`
+  - Prevents false rejections when trailing slashes are present in URLs
+
 ## 2.2.1
 
 - **CRITICAL FIX**: Resolved race condition in `FirebaseAppCheckService` initialization that caused `PathNotFoundException` errors during concurrent requests

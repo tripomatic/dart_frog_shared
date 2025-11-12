@@ -48,7 +48,6 @@ void main() {
       const config = AppCheckConfig(
         firebaseProjectId: 'test-project',
         serviceAccountJson: '{"type": "service_account"}',
-        enableDevMode: false, // Ensure it works even in production mode
       );
 
       when(() => request.method).thenReturn(HttpMethod.options);
