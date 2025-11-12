@@ -26,7 +26,9 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
 
       // Skip App Check for exempt paths
       final path = context.request.uri.path;
-      if (config.exemptPaths.contains(path)) {
+      // Normalize path by removing trailing slash for comparison (except root path)
+      final normalizedPath = path.endsWith('/') && path.length > 1 ? path.substring(0, path.length - 1) : path;
+      if (config.exemptPaths.contains(normalizedPath)) {
         logger.fine('Skipping App Check for exempt path: $path');
         return handler(context);
       }

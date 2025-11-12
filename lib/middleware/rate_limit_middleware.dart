@@ -51,9 +51,11 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
   return (Handler handler) {
     return (RequestContext context) {
       final path = context.request.uri.path;
+      // Normalize path by removing trailing slash for comparison (except root path)
+      final normalizedPath = path.endsWith('/') && path.length > 1 ? path.substring(0, path.length - 1) : path;
 
       // Skip rate limiting for exempt paths
-      if (config.exemptPaths.contains(path)) {
+      if (config.exemptPaths.contains(normalizedPath)) {
         return handler(context);
       }
 
