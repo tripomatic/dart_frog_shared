@@ -1,3 +1,10 @@
+## 2.2.3
+
+- Refactored CORS configuration to use static constants for default values
+  - Extracted default allowed origins, methods, headers, and max age into documented static constants
+  - Improves code reusability and makes defaults more explicit
+  - No breaking changes - behavior remains identical
+
 ## 2.2.2
 
 - Fixed App Check middleware to handle trailing slashes in exempt paths

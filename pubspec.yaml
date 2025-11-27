@@ -1,6 +1,6 @@
 name: dart_frog_shared
 description: Shared exception handling, logging, and middleware utilities for Dart Frog server projects
-version: 2.2.2
+version: 2.2.3
 repository: https://github.com/tripomatic/dart_frog_shared
 homepage: https://github.com/tripomatic/dart_frog_shared
 
