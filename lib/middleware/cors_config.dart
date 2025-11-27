@@ -1,18 +1,30 @@
 /// Configuration for CORS middleware
 class CorsConfig {
+  /// Default allowed origins for CORS requests.
+  static const List<String> defaultAllowedOrigins = ['*'];
+
+  /// Default allowed HTTP methods for CORS requests.
+  static const List<String> defaultAllowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+
+  /// Default allowed headers in CORS requests.
+  static const List<String> defaultAllowedHeaders = [
+    'Origin',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'X-Requested-With',
+    'X-Firebase-AppCheck',
+  ];
+
+  /// Default max age for preflight request caching.
+  static const Duration defaultMaxAge = Duration(hours: 24);
+
   /// Creates a new CORS configuration
   const CorsConfig({
-    this.allowedOrigins = const ['*'],
-    this.allowedMethods = const ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    this.allowedHeaders = const [
-      'Origin',
-      'Content-Type',
-      'Accept',
-      'Authorization',
-      'X-Requested-With',
-      'X-Firebase-AppCheck',
-    ],
-    this.maxAge = const Duration(hours: 24),
+    this.allowedOrigins = defaultAllowedOrigins,
+    this.allowedMethods = defaultAllowedMethods,
+    this.allowedHeaders = defaultAllowedHeaders,
+    this.maxAge = defaultMaxAge,
   });
 
   /// Allowed origins for CORS requests
