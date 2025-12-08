@@ -47,15 +47,6 @@ description: Bump package version, update changelog, verify metadata, and create
 - Run `flutter test` to ensure all tests pass
 - Generate a summary of all changes
 
-## User Confirmation
-
-- Present a summary of:
-  - Current version → New version
-  - Changelog entry
-  - Files that will be modified
-  - Any metadata updates made
-- PROMPT THE USER TO CONFIRM before proceeding
-
 ## Commit and Tag
 
 - Stage all modified files
