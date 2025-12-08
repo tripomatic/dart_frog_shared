@@ -43,7 +43,7 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
       final appCheckToken = context.request.headers['X-Firebase-AppCheck'];
 
       if (appCheckToken == null || appCheckToken.isEmpty) {
-        logger.warning('Missing App Check token');
+        logger.fine('Missing App Check token');
         return _unauthorizedResponse(context, 'Missing App Check token', config.enableDevMode);
       }
 
