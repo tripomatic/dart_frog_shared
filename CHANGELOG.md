@@ -1,3 +1,14 @@
+## 2.3.0
+
+- Added `ForbiddenException` (HTTP 403) for role-based access control scenarios
+  - Use for authenticated users who lack required permissions/roles
+  - Distinct from `UnauthorizedException` (401) which is for missing/invalid credentials
+- Added `enableDevMode` parameter to `RateLimitConfig` to bypass rate limiting during development
+- Fixed App Check middleware to log 'Missing App Check token' at FINE level instead of WARNING
+  - Missing tokens are expected behavior for unauthorized clients, not recoverable issues
+  - Reduces log noise in production
+- Updated dependencies and SDK version constraints
+
 ## 2.2.3
 
 - Refactored CORS configuration to use static constants for default values
