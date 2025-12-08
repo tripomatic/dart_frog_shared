@@ -24,6 +24,7 @@ class EndpointRateLimit {
 class RateLimitConfig {
   /// Creates a rate limiting configuration
   const RateLimitConfig({
+    this.enableDevMode = false,
     this.defaultMaxRequests = 60,
     this.defaultWindowSize = const Duration(hours: 1),
     this.endpointLimits = const [],
@@ -31,6 +32,9 @@ class RateLimitConfig {
     this.clientIdentifierExtractor,
     this.onRateLimitExceeded,
   });
+
+  /// Enable development mode to bypass all rate limiting
+  final bool enableDevMode;
 
   /// Default maximum requests for endpoints without specific limits
   final int defaultMaxRequests;

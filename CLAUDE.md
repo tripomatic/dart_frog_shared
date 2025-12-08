@@ -247,7 +247,7 @@ Handler middleware(Handler handler) {
 ```
 
 ### Rate Limiting Middleware
-Configurable rate limiting with endpoint-specific limits:
+Configurable rate limiting with endpoint-specific limits. Set `enableDevMode: true` to bypass all rate limiting during local development and integration testing:
 
 ```dart
 // In _middleware.dart
@@ -255,6 +255,7 @@ Handler middleware(Handler handler) {
   return handler
     .use(rateLimitMiddleware(
       config: RateLimitConfig(
+        enableDevMode: env['ENABLE_DEV_MODE'] == 'true',
         defaultMaxRequests: 60,
         defaultWindowSize: Duration(hours: 1),
         endpointLimits: [
