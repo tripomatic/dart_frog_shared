@@ -63,6 +63,15 @@ class AnonymousUnauthorizedException extends UnauthorizedException {
   AnonymousUnauthorizedException({required super.message, super.responseBodyMessage});
 }
 
+/// An exception thrown when the user lacks permission to perform the action.
+///
+/// Use this for authenticated users who don't have the required role/permission.
+/// For missing or invalid credentials, use [UnauthorizedException] instead.
+class ForbiddenException extends ApiException {
+  ForbiddenException({required super.message, String? responseBodyMessage})
+    : super(statusCode: HttpStatus.forbidden, responseMessage: responseBodyMessage ?? 'Forbidden');
+}
+
 /// An exception thrown if internal logic fails.
 class InternalServerErrorException extends ApiException {
   InternalServerErrorException({required super.message, String? responseBodyMessage})

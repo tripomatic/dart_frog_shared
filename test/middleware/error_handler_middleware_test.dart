@@ -100,6 +100,26 @@ void main() {
       verify(() => logger.warning('API error: Token expired at 2025-10-16', exception, any())).called(1);
     });
 
+    test('catches ForbiddenException and returns 403 response', () async {
+      final exception = ForbiddenException(
+        message: 'User lacks admin role for this operation',
+        responseBodyMessage: 'Forbidden',
+      );
+
+      final handler = (_) => throw exception;
+
+      final middleware = errorHandlerMiddleware();
+      final result = await middleware(handler)(context);
+
+      expect(result.statusCode, equals(403));
+      final body = jsonDecode(await result.body()) as Map<String, dynamic>;
+      expect(body['status'], equals(403));
+      expect(body['error'], equals('Forbidden'));
+      expect(body['debug_message'], isNull);
+
+      verify(() => logger.warning('API error: User lacks admin role for this operation', exception, any())).called(1);
+    });
+
     test('catches NotFoundException and returns 404 response', () async {
       final exception = NotFoundException(
         message: 'User ID 123 not found in database',
