@@ -41,6 +41,16 @@ void main() {
       when(() => request.method).thenReturn(HttpMethod.get);
     });
 
+    test('skips rate limiting when enableDevMode is true', () async {
+      when(() => uri.path).thenReturn('/api/test');
+
+      const config = RateLimitConfig(enableDevMode: true);
+      final middleware = rateLimitMiddleware(config: config);
+      final result = await middleware(handler)(context);
+
+      expect(result, equals(response));
+    });
+
     test('skips rate limiting for exempt paths', () async {
       when(() => uri.path).thenReturn('/ping');
 

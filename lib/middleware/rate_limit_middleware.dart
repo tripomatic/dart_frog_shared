@@ -50,6 +50,11 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
 
   return (Handler handler) {
     return (RequestContext context) {
+      // Skip rate limiting entirely in dev mode
+      if (config.enableDevMode) {
+        return handler(context);
+      }
+
       final path = context.request.uri.path;
       // Normalize path by removing trailing slash for comparison (except root path)
       final normalizedPath = path.endsWith('/') && path.length > 1 ? path.substring(0, path.length - 1) : path;
