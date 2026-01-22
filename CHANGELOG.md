@@ -1,3 +1,9 @@
+## 2.4.0
+
+- Added `ServiceUnavailableException` (HTTP 503) for upstream service failures
+  - Use when external dependencies (APIs, databases, etc.) are temporarily unavailable
+  - Helps distinguish between internal server errors and external service outages
+
 ## 2.3.0
 
 - Added `ForbiddenException` (HTTP 403) for role-based access control scenarios
