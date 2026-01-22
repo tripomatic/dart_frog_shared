@@ -108,8 +108,5 @@ class ConflictException extends ApiException {
 /// unavailable and the request cannot be fulfilled.
 class ServiceUnavailableException extends ApiException {
   ServiceUnavailableException({required super.message, String? responseBodyMessage})
-    : super(
-        statusCode: HttpStatus.serviceUnavailable,
-        responseMessage: responseBodyMessage ?? 'Service Unavailable',
-      );
+    : super(statusCode: HttpStatus.serviceUnavailable, responseMessage: responseBodyMessage ?? 'Service Unavailable');
 }
