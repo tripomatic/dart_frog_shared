@@ -214,6 +214,25 @@ void main() {
       verify(() => logger.severe('API error: Invalid data format in field X', exception, any())).called(1);
     });
 
+    test('catches ServiceUnavailableException and returns 503 response', () async {
+      final exception = ServiceUnavailableException(
+        message: 'Weather API timeout after 30s',
+        responseBodyMessage: 'Service temporarily unavailable',
+      );
+
+      final handler = (_) => throw exception;
+
+      final middleware = errorHandlerMiddleware();
+      final result = await middleware(handler)(context);
+
+      expect(result.statusCode, equals(503));
+      final body = jsonDecode(await result.body()) as Map<String, dynamic>;
+      expect(body['status'], equals(503));
+      expect(body['error'], equals('Service temporarily unavailable'));
+
+      verify(() => logger.severe('API error: Weather API timeout after 30s', exception, any())).called(1);
+    });
+
     test('includes debug_message when debug mode is enabled', () async {
       final exception = BadRequestException(
         message: 'Internal debug: Field validation failed at line 42',

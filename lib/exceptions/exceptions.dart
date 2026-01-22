@@ -101,3 +101,12 @@ class ConflictException extends ApiException {
   ConflictException({required super.message, String? responseBodyMessage})
     : super(statusCode: HttpStatus.conflict, responseMessage: responseBodyMessage ?? 'Conflict');
 }
+
+/// An exception thrown when an upstream service is unavailable.
+///
+/// Use this when external dependencies (APIs, databases, etc.) are temporarily
+/// unavailable and the request cannot be fulfilled.
+class ServiceUnavailableException extends ApiException {
+  ServiceUnavailableException({required super.message, String? responseBodyMessage})
+    : super(statusCode: HttpStatus.serviceUnavailable, responseMessage: responseBodyMessage ?? 'Service Unavailable');
+}
