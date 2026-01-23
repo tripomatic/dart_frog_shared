@@ -1,3 +1,10 @@
+## 2.4.1
+
+- Fixed `rateLimitMiddleware` throwing `ArgumentError` when request paths start with `.`
+  - Requests to paths like `/.github/`, `/.git/`, `/.env` now correctly pass through to 404 handlers
+  - Changed from dynamic path-based logger names to static `'rate_limit'` logger name
+  - Prevents 500 errors and log pollution from scanner/bot probing
+
 ## 2.4.0
 
 - Added `ServiceUnavailableException` (HTTP 503) for upstream service failures
