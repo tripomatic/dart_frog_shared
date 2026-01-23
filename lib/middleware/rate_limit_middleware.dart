@@ -17,7 +17,8 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
     onRateLimitExceeded:
         config.onRateLimitExceeded ??
         (request) {
-          final logger = Logger(request.url.path);
+          // Use static logger name to avoid ArgumentError with paths starting with '.'
+          final logger = Logger('rate_limit');
           final clientIdentifier = config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor;
           final clientIp = clientIdentifier(request);
           logger.warning('Rate limit exceeded for IP $clientIp on ${request.url.path}');
@@ -36,7 +37,8 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
       onRateLimitExceeded:
           config.onRateLimitExceeded ??
           (request) {
-            final logger = Logger(request.url.path);
+            // Use static logger name to avoid ArgumentError with paths starting with '.'
+            final logger = Logger('rate_limit');
             final clientIdentifier =
                 config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor;
             final clientIp = clientIdentifier(request);

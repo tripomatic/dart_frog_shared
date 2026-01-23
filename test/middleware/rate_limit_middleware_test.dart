@@ -115,6 +115,25 @@ void main() {
       final middleware = rateLimitMiddleware(config: config);
       expect(middleware, isA<Middleware>());
     });
+
+    test('handles paths starting with dot without throwing ArgumentError', () async {
+      when(() => uri.path).thenReturn('/.github/workflows/release.yml');
+
+      const config = RateLimitConfig(enableDevMode: true);
+      final middleware = rateLimitMiddleware(config: config);
+      final result = await middleware(handler)(context);
+
+      expect(result, equals(response));
+    });
+
+    test('middleware creation with dot-path does not throw', () {
+      when(() => uri.path).thenReturn('/.git/index');
+
+      final middleware = rateLimitMiddleware();
+      final middlewareHandler = middleware(handler);
+
+      expect(middlewareHandler, isA<Handler>());
+    });
   });
 
   group('RateLimitConfig', () {
