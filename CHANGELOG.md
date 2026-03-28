@@ -1,3 +1,14 @@
+## 2.5.0
+
+- Added server-to-server API key authentication to App Check middleware
+  - Configure pre-shared API keys via `AppCheckConfig.serverApiKeys` for server-to-server calls
+  - Requests with valid `X-Server-API-Key` header bypass App Check validation
+  - Invalid keys are rejected immediately with 401 (fail-fast, no fallthrough to App Check)
+  - Missing header falls through to normal App Check flow
+  - Uses constant-time comparison to prevent timing attacks on API keys
+  - Dev mode bypasses all authentication including server API keys
+  - Keys stored as comma-separated environment variable (e.g., `SERVER_API_KEYS=key1,key2`)
+
 ## 2.4.1
 
 - Fixed `rateLimitMiddleware` throwing `ArgumentError` when request paths start with `.`
