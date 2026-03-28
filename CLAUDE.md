@@ -220,6 +220,43 @@ Handler middleware(Handler handler) {
 }
 ```
 
+### Server-to-Server API Key Authentication
+
+For server-to-server calls where no client App Check token is available (e.g., web server calling an API during SSR), configure pre-shared API keys:
+
+```dart
+// In _middleware.dart
+Handler middleware(Handler handler) {
+  return handler
+    .use(appCheckMiddleware(
+      config: AppCheckConfig(
+        firebaseProjectId: env['FIREBASE_PROJECT_ID']!,
+        serviceAccountJson: env['FIREBASE_SERVICE_ACCOUNT_JSON']!,
+        enableDevMode: env['ENABLE_DEV_MODE'] == 'true',
+        exemptPaths: ['/ping', '/health'],
+        serverApiKeys: _parseServerApiKeys(env['SERVER_API_KEYS']),
+      ),
+    ));
+}
+
+List<String> _parseServerApiKeys(String? value) {
+  if (value == null || value.isEmpty) return [];
+  return value.split(',').map((k) => k.trim()).where((k) => k.isNotEmpty).toList();
+}
+```
+
+**Middleware behavior:**
+1. Request has `X-Server-API-Key` header matching a configured key → allowed through
+2. Request has `X-Server-API-Key` header with invalid key → rejected with 401 (fail-fast)
+3. Request has no `X-Server-API-Key` header → continues to normal App Check flow
+
+**Environment variable format** (same for `.env` files and GCP Secret Manager):
+```
+SERVER_API_KEYS=key-web-astro-abc123,key-api-places-def456
+```
+
+Each calling service should have its own key for auditability.
+
 ## Testing Approach
 - Uses `mocktail` for mocking dependencies
 - Test files mirror source structure under `test/`

@@ -106,5 +106,96 @@ void main() {
 
       expect(result.statusCode, equals(HttpStatus.unauthorized));
     });
+
+    group('server API key authentication', () {
+      test('should bypass App Check with valid server API key', () async {
+        const config = AppCheckConfig(
+          firebaseProjectId: 'test-project',
+          serviceAccountJson: '{"type": "service_account"}',
+          serverApiKeys: ['key-web-astro-abc123', 'key-api-places-def456'],
+        );
+
+        when(() => request.headers).thenReturn({'X-Server-API-Key': 'key-web-astro-abc123'});
+
+        final middleware = appCheckMiddleware(config: config);
+        final middlewareHandler = middleware(handler);
+
+        final result = await middlewareHandler(context);
+
+        expect(result, equals(response));
+      });
+
+      test('should return 401 for invalid server API key', () async {
+        const config = AppCheckConfig(
+          firebaseProjectId: 'test-project',
+          serviceAccountJson: '{"type": "service_account"}',
+          serverApiKeys: ['key-web-astro-abc123'],
+        );
+
+        when(() => request.headers).thenReturn({'X-Server-API-Key': 'wrong-key'});
+
+        final middleware = appCheckMiddleware(config: config);
+        final middlewareHandler = middleware(handler);
+
+        final result = await middlewareHandler(context);
+
+        expect(result.statusCode, equals(HttpStatus.unauthorized));
+      });
+
+      test('should fall through to App Check when no server API key header', () async {
+        const config = AppCheckConfig(
+          firebaseProjectId: 'test-project',
+          serviceAccountJson: '{"type": "service_account"}',
+          serverApiKeys: ['key-web-astro-abc123'],
+        );
+
+        // No X-Server-API-Key header, no X-Firebase-AppCheck header
+        when(() => request.headers).thenReturn({});
+
+        final middleware = appCheckMiddleware(config: config);
+        final middlewareHandler = middleware(handler);
+
+        final result = await middlewareHandler(context);
+
+        // Falls through to App Check, which rejects due to missing token
+        expect(result.statusCode, equals(HttpStatus.unauthorized));
+      });
+
+      test('should bypass App Check in dev mode even with invalid server API key', () async {
+        const config = AppCheckConfig(
+          firebaseProjectId: 'test-project',
+          serviceAccountJson: '{"type": "service_account"}',
+          enableDevMode: true,
+          serverApiKeys: ['key-web-astro-abc123'],
+        );
+
+        when(() => request.headers).thenReturn({'X-Server-API-Key': 'wrong-key'});
+
+        final middleware = appCheckMiddleware(config: config);
+        final middlewareHandler = middleware(handler);
+
+        final result = await middlewareHandler(context);
+
+        expect(result, equals(response));
+      });
+
+      test('should ignore server API key check when serverApiKeys is empty', () async {
+        const config = AppCheckConfig(
+          firebaseProjectId: 'test-project',
+          serviceAccountJson: '{"type": "service_account"}',
+        );
+
+        // Has X-Server-API-Key header but serverApiKeys is empty
+        when(() => request.headers).thenReturn({'X-Server-API-Key': 'some-key'});
+
+        final middleware = appCheckMiddleware(config: config);
+        final middlewareHandler = middleware(handler);
+
+        final result = await middlewareHandler(context);
+
+        // Ignored server key, fell through to App Check, rejected for missing token
+        expect(result.statusCode, equals(HttpStatus.unauthorized));
+      });
+    });
   });
 }

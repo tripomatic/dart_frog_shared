@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
@@ -11,6 +12,8 @@ import 'package:dart_frog_shared/app_check/firebase_app_check_service.dart';
 
 /// Creates App Check middleware for Dart Frog applications
 Middleware appCheckMiddleware({required AppCheckConfig config}) {
+  assert(config.serverApiKeys.every((k) => k.isNotEmpty), 'serverApiKeys must not contain empty strings');
+
   final logger = Logger('AppCheckMiddleware');
   final tokenCache = AppCheckTokenCache(maxSize: config.cacheMaxSize, tokenDuration: config.cacheDuration);
   final firebaseService = FirebaseAppCheckService(config);
@@ -37,6 +40,19 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
       if (config.enableDevMode) {
         logger.info('App Check bypassed in dev mode');
         return handler(context);
+      }
+
+      // Check for server-to-server API key authentication
+      if (config.serverApiKeys.isNotEmpty) {
+        final serverApiKey = context.request.headers['X-Server-API-Key'];
+        if (serverApiKey != null) {
+          if (config.serverApiKeys.any((k) => _constantTimeEquals(k, serverApiKey))) {
+            logger.fine('Server API key authentication successful');
+            return handler(context);
+          }
+          logger.warning('Invalid server API key rejected');
+          return _unauthorizedResponse(context, 'Invalid server API key', config.enableDevMode);
+        }
       }
 
       // Get App Check token from header
@@ -98,6 +114,18 @@ Response _errorResponse(RequestContext context, String message, bool includeDeta
   final responseBody = {'error': includeDetails ? message : 'Internal server error'};
 
   return Response.json(body: responseBody, statusCode: HttpStatus.internalServerError);
+}
+
+/// Constant-time string comparison to prevent timing attacks on API keys.
+bool _constantTimeEquals(String a, String b) {
+  final aBytes = utf8.encode(a);
+  final bBytes = utf8.encode(b);
+  if (aBytes.length != bBytes.length) return false;
+  var result = 0;
+  for (var i = 0; i < aBytes.length; i++) {
+    result |= aBytes[i] ^ bBytes[i];
+  }
+  return result == 0;
 }
 
 /// Gets the request body safely
