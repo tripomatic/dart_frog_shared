@@ -1,5 +1,6 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_frog_shared/middleware/rate_limit_config.dart';
+import 'package:dart_frog_shared/middleware/rate_limit_log_throttle.dart';
 import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_limiter/shelf_limiter.dart';
@@ -9,20 +10,18 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
   // Create rate limiters for each endpoint configuration
   final limiters = <String, shelf.Middleware>{};
 
+  final clientIdentifier = config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor;
+  final logThrottle = RateLimitLogThrottle(config.logThrottleDuration);
+
   // Create default limiter
   final defaultOptions = RateLimiterOptions(
     maxRequests: config.defaultMaxRequests,
     windowSize: config.defaultWindowSize,
-    clientIdentifierExtractor: config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor,
+    clientIdentifierExtractor: clientIdentifier,
     onRateLimitExceeded:
         config.onRateLimitExceeded ??
         (request) {
-          // Use static logger name to avoid ArgumentError with paths starting with '.'
-          final logger = Logger('rate_limit');
-          final clientIdentifier = config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor;
-          final clientIp = clientIdentifier(request);
-          logger.warning('Rate limit exceeded for IP $clientIp on ${request.url.path}');
-
+          _logRateLimitExceeded(request, clientIdentifier, logThrottle);
           return RateLimitConfig.defaultRateLimitExceededResponse(request, config.defaultMaxRequests);
         },
   );
@@ -33,17 +32,11 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
     final options = RateLimiterOptions(
       maxRequests: endpointLimit.maxRequests,
       windowSize: endpointLimit.windowSize,
-      clientIdentifierExtractor: config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor,
+      clientIdentifierExtractor: clientIdentifier,
       onRateLimitExceeded:
           config.onRateLimitExceeded ??
           (request) {
-            // Use static logger name to avoid ArgumentError with paths starting with '.'
-            final logger = Logger('rate_limit');
-            final clientIdentifier =
-                config.clientIdentifierExtractor ?? RateLimitConfig.defaultClientIdentifierExtractor;
-            final clientIp = clientIdentifier(request);
-            logger.warning('Rate limit exceeded for IP $clientIp on ${request.url.path}');
-
+            _logRateLimitExceeded(request, clientIdentifier, logThrottle);
             return RateLimitConfig.defaultRateLimitExceededResponse(request, endpointLimit.maxRequests);
           },
     );
@@ -84,4 +77,34 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
       return rateLimitedHandler(context);
     };
   };
+}
+
+/// Logs a "rate limit exceeded" warning, throttled per (client, path) pair.
+///
+/// Prevents log floods by only emitting one warning per throttle window for a
+/// given client+path combination; additional blocked requests in the window
+/// are counted and surfaced in the next emitted log line.
+void _logRateLimitExceeded(
+  shelf.Request request,
+  ClientIdentifierExtractor clientIdentifier,
+  RateLimitLogThrottle logThrottle,
+) {
+  // Use static logger name to avoid ArgumentError with paths starting with '.'
+  final logger = Logger('rate_limit');
+  final clientIp = clientIdentifier(request);
+  final path = request.url.path;
+  final key = '$clientIp|$path';
+
+  final decision = logThrottle.register(key);
+  if (!decision.shouldLog) return;
+
+  final suppressed = decision.suppressedCount;
+  if (suppressed > 0) {
+    logger.warning(
+      'Rate limit exceeded for IP $clientIp on $path '
+      '(+$suppressed suppressed in the last ${logThrottle.window.inSeconds}s)',
+    );
+  } else {
+    logger.warning('Rate limit exceeded for IP $clientIp on $path');
+  }
 }

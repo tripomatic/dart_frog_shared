@@ -1,3 +1,12 @@
+## 2.6.0
+
+- Throttled "rate limit exceeded" warning logs in `rateLimitMiddleware` to prevent log spam from misbehaving clients
+  - Previously every blocked request emitted a warning, producing thousands of duplicate entries in Papertrail
+  - Now at most one warning is emitted per `(client, path)` pair per throttle window (default 1 minute)
+  - Suppressed-hit count is surfaced in the next emitted log entry (e.g., `+42 suppressed in the last 60s`)
+  - New `RateLimitConfig.logThrottleDuration` parameter; set to `Duration.zero` to restore legacy per-request logging
+  - Stale throttle entries are opportunistically pruned to keep memory bounded
+
 ## 2.5.0
 
 - Added server-to-server API key authentication to App Check middleware

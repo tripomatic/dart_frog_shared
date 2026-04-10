@@ -31,6 +31,7 @@ class RateLimitConfig {
     this.exemptPaths = const [],
     this.clientIdentifierExtractor,
     this.onRateLimitExceeded,
+    this.logThrottleDuration = const Duration(minutes: 1),
   });
 
   /// Enable development mode to bypass all rate limiting
@@ -53,6 +54,17 @@ class RateLimitConfig {
 
   /// Custom handler for rate limit exceeded
   final shelf.Response Function(shelf.Request)? onRateLimitExceeded;
+
+  /// Minimum duration between "rate limit exceeded" log entries for the same
+  /// (client, path) combination.
+  ///
+  /// Prevents log spam when a misbehaving client hammers an endpoint — only
+  /// the first block within the window is logged, and subsequent blocks are
+  /// counted and reported in the next throttled log entry.
+  ///
+  /// Defaults to 1 minute. Set to [Duration.zero] to log every blocked
+  /// request (legacy behavior).
+  final Duration logThrottleDuration;
 
   /// Default client identifier extractor that uses IP address
   static String defaultClientIdentifierExtractor(shelf.Request request) {
