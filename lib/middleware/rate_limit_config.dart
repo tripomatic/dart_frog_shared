@@ -29,6 +29,7 @@ class RateLimitConfig {
     this.defaultWindowSize = const Duration(hours: 1),
     this.endpointLimits = const [],
     this.exemptPaths = const [],
+    this.serverApiKeys = const [],
     this.clientIdentifierExtractor,
     this.onRateLimitExceeded,
     this.logThrottleDuration = const Duration(minutes: 1),
@@ -48,6 +49,15 @@ class RateLimitConfig {
 
   /// Paths that are exempt from rate limiting
   final List<String> exemptPaths;
+
+  /// Server-to-server API keys that bypass rate limiting entirely.
+  ///
+  /// When a request includes an `X-Server-API-Key` header whose value matches
+  /// one of these keys (constant-time compare), the request skips rate
+  /// limiting. Invalid or missing keys fall through to normal limiting; any
+  /// rejection of invalid keys is the responsibility of upstream auth
+  /// middleware (e.g. App Check).
+  final List<String> serverApiKeys;
 
   /// Custom function to extract client identifier
   final ClientIdentifierExtractor? clientIdentifierExtractor;

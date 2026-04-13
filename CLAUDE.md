@@ -257,6 +257,27 @@ SERVER_API_KEYS=key-web-astro-abc123,key-api-places-def456
 
 Each calling service should have its own key for auditability.
 
+**Bypassing rate limits for server-to-server traffic:**
+
+`RateLimitConfig` accepts the same `serverApiKeys` parameter so server-to-server callers can also skip rate limiting:
+
+```dart
+.use(rateLimitMiddleware(
+  config: RateLimitConfig(
+    enableDevMode: env['ENABLE_DEV_MODE'] == 'true',
+    serverApiKeys: _parseServerApiKeys(env['SERVER_API_KEYS']),
+    // ... other rate limit config
+  ),
+))
+```
+
+Behavior in `rateLimitMiddleware`:
+1. Request has `X-Server-API-Key` header matching a configured key → bypasses rate limiting
+2. Request has `X-Server-API-Key` header with invalid key → falls through to normal rate limiting (rejection is App Check's job downstream)
+3. Request has no `X-Server-API-Key` header → normal rate limiting applies
+
+Use the same `serverApiKeys` value for both middlewares so a server-to-server caller bypasses both checks consistently.
+
 ## Testing Approach
 - Uses `mocktail` for mocking dependencies
 - Test files mirror source structure under `test/`

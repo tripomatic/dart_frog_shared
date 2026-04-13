@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
@@ -9,6 +8,7 @@ import 'package:dart_frog_shared/logging/request_context_details.dart';
 import 'package:dart_frog_shared/app_check/app_check_config.dart';
 import 'package:dart_frog_shared/app_check/app_check_token_cache.dart';
 import 'package:dart_frog_shared/app_check/firebase_app_check_service.dart';
+import 'package:dart_frog_shared/utils/constant_time_equals.dart';
 
 /// Creates App Check middleware for Dart Frog applications
 Middleware appCheckMiddleware({required AppCheckConfig config}) {
@@ -46,7 +46,7 @@ Middleware appCheckMiddleware({required AppCheckConfig config}) {
       if (config.serverApiKeys.isNotEmpty) {
         final serverApiKey = context.request.headers['X-Server-API-Key'];
         if (serverApiKey != null) {
-          if (config.serverApiKeys.any((k) => _constantTimeEquals(k, serverApiKey))) {
+          if (config.serverApiKeys.any((k) => constantTimeEquals(k, serverApiKey))) {
             logger.fine('Server API key authentication successful');
             return handler(context);
           }
@@ -114,18 +114,6 @@ Response _errorResponse(RequestContext context, String message, bool includeDeta
   final responseBody = {'error': includeDetails ? message : 'Internal server error'};
 
   return Response.json(body: responseBody, statusCode: HttpStatus.internalServerError);
-}
-
-/// Constant-time string comparison to prevent timing attacks on API keys.
-bool _constantTimeEquals(String a, String b) {
-  final aBytes = utf8.encode(a);
-  final bBytes = utf8.encode(b);
-  if (aBytes.length != bBytes.length) return false;
-  var result = 0;
-  for (var i = 0; i < aBytes.length; i++) {
-    result |= aBytes[i] ^ bBytes[i];
-  }
-  return result == 0;
 }
 
 /// Gets the request body safely

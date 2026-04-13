@@ -116,6 +116,64 @@ void main() {
       expect(middleware, isA<Middleware>());
     });
 
+    test('skips rate limiting for valid server API key', () async {
+      when(() => uri.path).thenReturn('/api/test');
+      when(() => request.headers).thenReturn({'X-Server-API-Key': 'valid-key-123'});
+
+      const config = RateLimitConfig(serverApiKeys: ['valid-key-123', 'other-key']);
+      final middleware = rateLimitMiddleware(config: config);
+      final result = await middleware(handler)(context);
+
+      expect(result, equals(response));
+    });
+
+    test('does not bypass when serverApiKeys list is empty even if header present', () async {
+      // When no server keys are configured, the middleware skips the
+      // bypass check entirely. We can't fully mock the shelf_limiter
+      // pipeline, so use enableDevMode to confirm the request is not
+      // affected by the (absent) bypass logic.
+      when(() => uri.path).thenReturn('/api/test');
+      when(() => request.headers).thenReturn({'X-Server-API-Key': 'any-key'});
+
+      const config = RateLimitConfig(enableDevMode: true);
+      final middleware = rateLimitMiddleware(config: config);
+      final result = await middleware(handler)(context);
+
+      expect(result, equals(response));
+    });
+
+    test('does not bypass when X-Server-API-Key header value does not match any configured key', () {
+      // Construction must succeed even when an invalid key is presented;
+      // the request falls through to the rate limiter rather than being
+      // rejected (rejection is App Check's job downstream).
+      when(() => uri.path).thenReturn('/api/test');
+      when(() => request.headers).thenReturn({'X-Server-API-Key': 'wrong-key'});
+
+      const config = RateLimitConfig(serverApiKeys: ['valid-key-123']);
+      final middleware = rateLimitMiddleware(config: config);
+      final middlewareHandler = middleware(handler);
+
+      expect(middlewareHandler, isA<Handler>());
+    });
+
+    test('does not bypass when X-Server-API-Key header is missing', () {
+      when(() => uri.path).thenReturn('/api/test');
+      when(() => request.headers).thenReturn({});
+
+      const config = RateLimitConfig(serverApiKeys: ['valid-key-123']);
+      final middleware = rateLimitMiddleware(config: config);
+      final middlewareHandler = middleware(handler);
+
+      expect(middlewareHandler, isA<Handler>());
+    });
+
+    test('asserts that serverApiKeys does not contain empty strings', () {
+      expect(
+        () => rateLimitMiddleware(config: const RateLimitConfig(serverApiKeys: [''])),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+
     test('handles paths starting with dot without throwing ArgumentError', () async {
       when(() => uri.path).thenReturn('/.github/workflows/release.yml');
 

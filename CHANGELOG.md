@@ -1,3 +1,14 @@
+## 2.7.0
+
+- Added server-to-server API key bypass to `rateLimitMiddleware`
+  - New `RateLimitConfig.serverApiKeys` parameter mirrors the existing App Check option
+  - Requests with a valid `X-Server-API-Key` header skip rate limiting entirely
+  - Invalid or missing keys fall through to normal rate limiting (rejection of invalid keys is App Check's responsibility downstream)
+  - Uses constant-time comparison to prevent timing attacks
+  - Asserts that configured keys are non-empty (matches App Check behavior)
+- Extracted `constantTimeEquals` helper into `lib/utils/constant_time_equals.dart` and exported it for reuse
+  - Previously duplicated as a private helper inside `appCheckMiddleware`
+
 ## 2.6.0
 
 - Throttled "rate limit exceeded" warning logs in `rateLimitMiddleware` to prevent log spam from misbehaving clients

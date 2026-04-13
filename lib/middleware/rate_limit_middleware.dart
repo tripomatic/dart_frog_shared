@@ -1,12 +1,15 @@
 import 'package:dart_frog/dart_frog.dart';
 import 'package:dart_frog_shared/middleware/rate_limit_config.dart';
 import 'package:dart_frog_shared/middleware/rate_limit_log_throttle.dart';
+import 'package:dart_frog_shared/utils/constant_time_equals.dart';
 import 'package:logging/logging.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_limiter/shelf_limiter.dart';
 
 /// Creates a rate limiting middleware with the given configuration
 Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()}) {
+  assert(config.serverApiKeys.every((k) => k.isNotEmpty), 'serverApiKeys must not contain empty strings');
+
   // Create rate limiters for each endpoint configuration
   final limiters = <String, shelf.Middleware>{};
 
@@ -62,6 +65,16 @@ Middleware rateLimitMiddleware({RateLimitConfig config = const RateLimitConfig()
       // Skip rate limiting for OPTIONS requests
       if (context.request.method == HttpMethod.options) {
         return handler(context);
+      }
+
+      // Skip rate limiting for valid server-to-server API keys.
+      // Invalid keys fall through to normal rate limiting; rejection of
+      // invalid keys is handled downstream by App Check middleware.
+      if (config.serverApiKeys.isNotEmpty) {
+        final serverApiKey = context.request.headers['X-Server-API-Key'];
+        if (serverApiKey != null && config.serverApiKeys.any((k) => constantTimeEquals(k, serverApiKey))) {
+          return handler(context);
+        }
       }
 
       // Apply appropriate rate limiter based on endpoint
